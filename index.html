@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nofuture Buddy Web Interface (Memguard GO Powered)</title>
+    <style>
+        :root {
+            --bg-color-day: #f0f0f0;
+            --text-color-day: #333;
+            --bg-color-night: #2e2e2e;
+            --text-color-night: #f0f0f0;
+            --primary-color: #0088cc;
+            --primary-hover: #007bb5;
+            --session-id-color: #ff4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color-night);
+            color: var(--text-color-night);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            padding: 1rem;
+            text-align: center;
+            color: #fff;
+        }
+
+        header h1 { margin: 0; }
+
+        main {
+            flex: 1;
+            max-width: 800px;
+            margin: auto;
+            padding: 1rem;
+        }
+
+        .instructions {
+            margin-bottom: 1rem;
+        }
+
+        .session-buttons, .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .row label {
+            margin-bottom: 0.5rem;
+        }
+
+        .row input[type="text"], .row textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #fff;
+        }
+
+        textarea {
+            min-height: 300px;
+            resize: vertical;
+        }
+
+        #sessionIdContainer {
+            display: none;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+
+        #sessionIdValue {
+            color: var(--session-id-color);
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        .status-message {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status-success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-error {
+            background-color: #f44336;
+            color: white;
+        }
+
+        /* Session Status Indicator Styles */
+        #sessionStatusIndicator {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background-color: #4a4a4a;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #statusDot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: #666;
+            transition: background-color 0.3s ease;
+        }
+
+        .status-none #statusDot { background-color: #666; }
+        .status-active #statusDot { background-color: #4CAF50; }
+        .status-paired #statusDot { background-color: #FFC107; }
+        .status-error #statusDot { background-color: #f44336; }
+
+        /* Virtual Keyboard Styles */
+        #keyboardContainer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 360px; /* Reduced from 400px */
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+            font-family: 'Cascadia Code', 'Consolas', monospace;
+        }
+
+        #keyboardHeader {
+            background-color: #007acc;
+            color: white;
+            padding: 10px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            border-radius: 8px 8px 0 0;
+        }
+
+        #closeKeyboardButton {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        #virtualKeyboard {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            padding: 12px;
+        }
+
+        .key {
+            position: relative;
+            padding: 8px 4px;
+            background-color: #3a3a3a;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 45px;
+            transition: background-color 0.2s;
+            border: 1px solid #555;
+        }
+
+        .key .primary {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .key .secondary {
+            font-size: 10px;
+            opacity: 0.7;
+            position: absolute;
+            top: 2px;
+            right: 4px;
+        }
+
+        .key:hover {
+            background-color: #4a4a4a;
+        }
+
+        .key-number { background-color: #2c3e50; }
+        .key-symbol { background-color: #8e44ad; }
+        .key-letter { background-color: #2980b9; }
+        .key-special {
+            background-color: #c0392b;
+            grid-column: span 2;
+        }
+        .key-space {
+            background-color: #27ae60;
+            grid-column: span 4;
+        }
+
+        #keyboardTooltip {
+            position: absolute;
+            width: 280px;
+            background-color: #2a2a2a;
+            color: #fff;
+            border: 2px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            z-index: 1000;
+            display: none;
+            font-size: 14px;
+            line-height: 1.5;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px;
+        }
+
+        #showKeyboardButton {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            position: relative;
+            display: block;
+            margin: 30px auto;
+            background-color: #2980b9;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+        #showKeyboardButton:hover {
+            background-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div id="sessionStatusIndicator" class="status-none">
+        <div id="statusDot"></div>
+        <span id="statusText">No Session</span>
+    </div>
+
+    <button id="themeToggle">Day</button>
+
+    <header>
+        <h1>Nofuture Buddy Web Interface - Memguard GO Powered</h1>
+    </header>
+
+    <main>
+        <div id="statusMessage" class="status-message"></div>
+
+        <p class="instructions">
+            This secure messaging application enables encrypted communication through mainstream messaging platforms without requiring extensions.
+            The session-based encryption ensures your messages remain secure while active, and once ended, the encryption keys are securely wiped from memory using Memguard protection.
+
+            <br><br>
+            <strong>Security Features:</strong>
+            <ul>
+                <li>Memguard memory protection ensures encryption keys and sensitive data are protected against memory dumps and cold boot attacks</li>
+                <li>All cryptographic operations are performed in secure memory regions</li>
+                <li>Session keys are automatically wiped when the session ends</li>
+            </ul>
+
+            <br>
+            <strong>Virtual Keyboard Security:</strong>
+            We strongly recommend using our built-in Virtual Keyboard to protect against:
+            <ul>
+                <li>Hardware and software keyloggers</li>
+                <li>Keyboard input monitoring malware</li>
+                <li>Screen recording spyware (keyboard layout randomly changes each time)</li>
+            </ul>
+            Right-click on keys to access secondary characters (uppercase/symbols).
+        </p>
+
+        <div id="sessionIdContainer">
+            <span>Your Session ID: </span>
+            <span id="sessionIdValue"></span>
+            <button id="copySessionIdBtn">Copy ID</button>
+        </div>
+
+        <div class="session-buttons">
+            <button id="startSessionBtn">Start Session</button>
+            <button id="endSessionBtn" style="display:none;">End Session</button>
+        </div>
+
+        <div class="row">
+            <label for="buddySessionIdInput">Buddy's Session ID:</label>
+            <input type="text" id="buddySessionIdInput" placeholder="Enter your buddy's session ID...">
+        </div>
+
+        <div class="session-buttons">
+            <button id="pairSessionsBtn">Pair Sessions</button>
+        </div>
+
+        <div class="row">
+            <label for="textInput">Message:</label>
+            <textarea id="textInput" placeholder="Type your message here..."></textarea>
+        </div>
+
+        <div class="buttons">
+            <button id="buddyEncryptBtn">Encrypt</button>
+            <button id="buddyDecryptBtn">Decrypt</button>
+        </div>
+
+        <div style="text-align: center; position: relative;">
+            <button id="showKeyboardButton">Virtual Keyboard</button>
+            <div id="keyboardTooltip">
+                <p>Our Virtual Keyboard helps avoid hardware keyloggers. Right-click for secondary characters.</p>
+            </div>
+        </div>
+
+        <div id="keyboardContainer">
+            <div id="keyboardHeader">
+                <span>Virtual Keyboard (Right-click for secondary character)</span>
+                <button id="closeKeyboardButton">&times;</button>
+            </div>
+            <div id="virtualKeyboard"></div>
+        </div>
+    </main>
+
+    <script>
+        let currentSessionId = null;
+
+        // Use relative URLs for API endpoints
+        const API_START = "/api/start_session";
+        const API_END = "/api/end_session";
+        const API_PAIR = "/api/pair_sessions";
+        const API_BUDDY_ENCRYPT = "/api/buddy_encrypt";
+        const API_BUDDY_DECRYPT = "/api/buddy_decrypt";
+
+        // DOM Elements
+        const sessionIdContainer = document.getElementById('sessionIdContainer');
+        const sessionIdValue = document.getElementById('sessionIdValue');
+        const copySessionIdBtn = document.getElementById('copySessionIdBtn');
+        const startSessionBtn = document.getElementById('startSessionBtn');
+        const endSessionBtn = document.getElementById('endSessionBtn');
+        const buddySessionIdInput = document.getElementById('buddySessionIdInput');
+        const pairSessionsBtn = document.getElementById('pairSessionsBtn');
+        const textInput = document.getElementById('textInput');
+        const buddyEncryptBtn = document.getElementById('buddyEncryptBtn');
+        const buddyDecryptBtn = document.getElementById('buddyDecryptBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const themeToggle = document.getElementById('themeToggle');
+        const statusIndicator = document.getElementById('sessionStatusIndicator');
+        const statusText = document.getElementById('statusText');
+
+        function showStatus(message, isError = false) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${isError ? 'status-error' : 'status-success'}`;
+            statusMessage.style.display = 'block';
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        async function apiRequest(endpoint, data = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API Request Error:', error);
+                throw error;
+            }
+        }
+
+        function updateSessionStatus(status, message) {
+            statusIndicator.className = `status-${status}`;
+            statusText.textContent = message;
+        }
+
+        // Event Listeners
+        startSessionBtn.addEventListener('click', async () => {
+            try {
+                const data = await apiRequest(API_START);
+                if (data.session_id) {
+                    currentSessionId = data.session_id;
+                    sessionIdValue.textContent = currentSessionId;
+                    sessionIdContainer.style.display = 'block';
+                    startSessionBtn.style.display = 'none';
+                    endSessionBtn.style.display = 'block';
+                    updateSessionStatus('active', 'Session Active');
+                    showStatus('Session started successfully');
+                }
+            } catch (error) {
+                updateSessionStatus('error', 'Session Error');
+                showStatus(`Failed to start session: ${error.message}`, true);
+            }
+        });
+
+        endSessionBtn.addEventListener('click', async () => {
+            if (!currentSessionId) return;
+            try {
+                await apiRequest(API_END, { session_id: currentSessionId });
+                currentSessionId = null;
+                sessionIdContainer.style.display = 'none';
+                startSessionBtn.style.display = 'block';
+                endSessionBtn.style.display = 'none';
+                buddySessionIdInput.value = '';
+                textInput.value = '';
+                updateSessionStatus('none', 'No Session');
+                showStatus('Session ended successfully');
+            } catch (error) {
+                updateSessionStatus('error', 'Session Error');
+                showStatus(`Failed to end session: ${error.message}`, true);
+            }
+        });
+
+        copySessionIdBtn.addEventListener('click', () => {
+            if (!currentSessionId) return;
+            navigator.clipboard.writeText(currentSessionId)
+                .then(() => showStatus('Session ID copied to clipboard'))
+                .catch(error => showStatus('Failed to copy session ID', true));
+        });
+
+        pairSessionsBtn.addEventListener('click', async () => {
+            if (!currentSessionId) {
+                showStatus('Start your session first', true);
+                return;
+            }
+            const buddySid = buddySessionIdInput.value.trim();
+            if (!buddySid) {
+                showStatus('Please enter a buddy session ID', true);
+                return;
+            }
+            try {
+                const data = await apiRequest(API_PAIR, {
+                    session_id_A: currentSessionId,
+                    session_id_B: buddySid
+                });
+                if (data.status === 'paired') {
+                    updateSessionStatus('paired', 'Session Paired');
+                    showStatus('Sessions paired successfully');
+                }
+            } catch (error) {
+                updateSessionStatus('error', 'Pairing Error');
+                showStatus(`Failed to pair sessions: ${error.message}`, true);
+            }
+        });
+
+        buddyEncryptBtn.addEventListener('click', async () => {
+            if (!currentSessionId) {
+                showStatus('Start a session first', true);
+                return;
+            }
+            const plaintext = textInput.value.trim();
+            if (!plaintext) {
+                showStatus('Nothing to encrypt', true);
+                return;
+            }
+            try {
+                const data = await apiRequest(API_BUDDY_ENCRYPT, {
+                    session_id: currentSessionId,
+                    plaintext: plaintext
+                });
+                if (data.encrypted_b64) {
+                    textInput.value = data.encrypted_b64;
+                    showStatus('Message encrypted successfully');
+                }
+            } catch (error) {
+                showStatus(`Encryption failed: ${error.message}`, true);
+            }
+        });
+
+        buddyDecryptBtn.addEventListener('click', async () => {
+            if (!currentSessionId) {
+                showStatus('Start a session first', true);
+                return;
+            }
+            const encrypted_b64 = textInput.value.trim();
+            if (!encrypted_b64) {
+                showStatus('No ciphertext to decrypt', true);
+                return;
+            }
+            try {
+                const data = await apiRequest(API_BUDDY_DECRYPT, {
+                    session_id: currentSessionId,
+                    encrypted_b64: encrypted_b64
+                });
+                if (data.plaintext) {
+                    textInput.value = data.plaintext;
+                    showStatus('Message decrypted successfully');
+                }
+            } catch (error) {
+                showStatus(`Decryption failed: ${error.message}`, true);
+            }
+        });
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            themeToggle.textContent = document.body.classList.contains('dark-theme') ? 'Night' : 'Day';
+        });
+
+        // Virtual Keyboard implementation
+        const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+        const numbers = '1234567890'.split('');
+        const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?/'.split('');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('virtualKeyboard');
+            keyboard.innerHTML = '';
+
+            // Shuffle each group separately
+            const shuffledLetters = shuffleArray([...letters]);
+            const shuffledNumbers = shuffleArray([...numbers]);
+            const shuffledSymbols = shuffleArray([...symbols]);
+
+            // Create keys for numbers with symbols as secondary characters
+            shuffledNumbers.forEach((num, i) => {
+                const key = document.createElement('div');
+                key.className = 'key key-number';
+                key.innerHTML = `
+                    <span class="primary">${num}</span>
+                    <span class="secondary">${shuffledSymbols[i] || ''}</span>
+                `;
+                key.onclick = () => insertCharacter(num);
+                key.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    insertCharacter(shuffledSymbols[i] || '');
+                };
+                keyboard.appendChild(key);
+            });
+
+            // Create keys for letters with uppercase as secondary characters
+            shuffledLetters.forEach(letter => {
+                const key = document.createElement('div');
+                key.className = 'key key-letter';
+                key.innerHTML = `
+                    <span class="primary">${letter}</span>
+                    <span class="secondary">${letter.toUpperCase()}</span>
+                `;
+                key.onclick = () => insertCharacter(letter);
+                key.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    insertCharacter(letter.toUpperCase());
+                };
+                keyboard.appendChild(key);
+            });
+
+            // Add backspace key
+            const backspaceKey = document.createElement('div');
+            backspaceKey.className = 'key key-special';
+            backspaceKey.innerHTML = '<span class="primary">⌫</span>';
+            backspaceKey.onclick = () => {
+                const textInput = document.getElementById('textInput');
+                const startPos = textInput.selectionStart;
+                const endPos = textInput.selectionEnd;
+
+                if (startPos === endPos) {
+                    if (startPos > 0) {
+                        textInput.value = textInput.value.slice(0, startPos - 1) + textInput.value.slice(startPos);
+                        textInput.setSelectionRange(startPos - 1, startPos - 1);
+                    }
+                } else {
+                    textInput.value = textInput.value.slice(0, startPos) + textInput.value.slice(endPos);
+                    textInput.setSelectionRange(startPos, startPos);
+                }
+                textInput.focus();
+            };
+            keyboard.appendChild(backspaceKey);
+
+            // Add space key
+            const spaceKey = document.createElement('div');
+            spaceKey.className = 'key key-space';
+            spaceKey.innerHTML = '<span class="primary">Space</span>';
+            spaceKey.onclick = () => insertCharacter(' ');
+            keyboard.appendChild(spaceKey);
+
+            // Create keys for remaining symbols
+            shuffledSymbols.slice(10).forEach(symbol => {
+                const key = document.createElement('div');
+                key.className = 'key key-symbol';
+                key.innerHTML = `
+                    <span class="primary">${symbol}</span>
+                `;
+                key.onclick = () => insertCharacter(symbol);
+                keyboard.appendChild(key);
+            });
+        }
+
+        function insertCharacter(char) {
+            const textInput = document.getElementById('textInput');
+            const startPos = textInput.selectionStart;
+            const endPos = textInput.selectionEnd;
+            const text = textInput.value;
+
+            textInput.value = text.substring(0, startPos) + char + text.substring(endPos);
+            textInput.setSelectionRange(startPos + 1, startPos + 1);
+            textInput.focus();
+        }
+
+        // Show/hide keyboard
+        document.getElementById('showKeyboardButton').addEventListener('click', () => {
+            const keyboard = document.getElementById('keyboardContainer');
+            keyboard.style.display = 'block';
+            createKeyboard(); // Create new random layout each time
+        });
+
+        document.getElementById('closeKeyboardButton').addEventListener('click', () => {
+            document.getElementById('keyboardContainer').style.display = 'none';
+        });
+
+        // Enable keyboard dragging
+        const keyboardHeader = document.getElementById('keyboardHeader');
+        const keyboardContainer = document.getElementById('keyboardContainer');
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        keyboardHeader.addEventListener('mousedown', dragStart);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('mouseleave', dragEnd);
+
+        function dragStart(e) {
+            if (e.target === keyboardHeader || e.target.parentElement === keyboardHeader) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+                isDragging = true;
+                keyboardHeader.style.cursor = 'grabbing';
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+                setTranslate(currentX, currentY, keyboardContainer);
+            }
+        }
+
+        function dragEnd(e) {
+            if (isDragging) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                keyboardHeader.style.cursor = 'move';
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+        }
+    </script>
+</body>
+</html>
