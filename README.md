@@ -27,20 +27,24 @@ b) <b>Session Management:</b>
 <p>Session IDs use cryptographically secure random generation</p>
 
 c) <b>Encryption Process:</b>
-
+<ul>
 Uses X25519 for key exchange
 Implements box.Seal for authenticated encryption
 Uses random nonces for each encryption
 Zero-copy buffer handling for sensitive data
-Virtual Keyboard Security Features:
-Randomized key layout on each activation
-Right-click secondary character access
-Drag-and-drop positioning
-Memory-safe input handling
-Protection against keyloggers
-Security Assessment:
+  </ul>
+  
+<h4>Virtual Keyboard Security Features:</h4>
+<ul>
+<li>Randomized key layout on each activation</li>
+<li>Right-click secondary character access</li>
+<li>Drag-and-drop positioning</li>
+<li>Memory-safe input handling</li>
+<li>Protection against keyloggers</li>
+  </ul>
+<b>Security Assessment:</b>
 
-The application provides strong protection against:
+<p>The application provides strong protection against:</p>
 
 <h4>RAM-based attacks:</h4>
 <ul>
