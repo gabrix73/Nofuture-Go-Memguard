@@ -20,11 +20,11 @@ defer memguard.Purge()</pre>
 <p>This ensures sensitive data is wiped from memory when the program terminates or receives an interrupt signal.</p>
 
 b) <b>Session Management:</b>
-
-<p>Private keys are stored in memguard.LockedBuffer</p>
-<p>Public keys are stored as regular bytes</p>
-<p>Sessions are managed in a thread-safe sync.Map</p>
-<p>Session IDs use cryptographically secure random generation</p>
+<ul>
+<li>Private keys are stored in memguard.LockedBuffer</li>
+<li>Public keys are stored as regular bytes</li>
+<li>Sessions are managed in a thread-safe sync.Map</li>
+<li>Session IDs use cryptographically secure random generation</li></ul>
 
 c) <b>Encryption Process:</b>
 <ul>
