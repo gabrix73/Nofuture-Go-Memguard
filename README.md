@@ -66,9 +66,8 @@ The application provides strong protection against:
   
 <h4>Malware resistance:</h4>
 <p>The combination of memguard protection and the virtual keyboard makes it extremely difficult for malware to capture sensitive data because:</p>
-Encryption keys are never exposed in regular memory
-Virtual keyboard prevents keylogging
-Screen recording is ineffective due to randomized layouts
-Memory is actively protected against dumping attempts
-Overall Security Assessment:
-The application provides robust protection against both memory-based attacks and network-based threats. The use of memguard for memory protection, combined with the virtual keyboard's anti-keylogging features, creates multiple layers of security that make it extremely difficult for malware or spyware to capture sensitive data.
+Encryption keys are never exposed in regular memory.<br>
+Virtual keyboard prevents keylogging, it also uses randomized layouts.<br>
+Memory is actively protected against dumping attempts.<br>
+<h4>Overall Security Assessment:</h4>
+<p>The application provides robust protection against both memory-based attacks and network-based threats.</p> The use of memguard for memory protection, combined with the virtual keyboard's anti-keylogging features, creates multiple layers of security that make it extremely difficult for malware or spyware to capture sensitive data.
