@@ -28,10 +28,10 @@ b) <b>Session Management:</b>
 
 c) <b>Encryption Process:</b>
 <ul>
-Uses X25519 for key exchange
-Implements box.Seal for authenticated encryption
-Uses random nonces for each encryption
-Zero-copy buffer handling for sensitive data
+<li>Uses X25519 for key exchange</li>  
+<li>mplements box.Seal for authenticated encryption</li>    
+<li>Uses random nonces for each encryption</li>  
+<li>Zero-copy buffer handling for sensitive data</li>
   </ul>
   
 <h4>Virtual Keyboard Security Features:</h4>
@@ -71,7 +71,8 @@ Zero-copy buffer handling for sensitive data
 <h4>Malware resistance:</h4>
 <p>The combination of memguard protection and the virtual keyboard makes it extremely difficult for malware to capture sensitive data because:</p>
 Encryption keys are never exposed in regular memory.<br>
-Virtual keyboard prevents keylogging, it also uses randomized layouts.<br>
+Virtual keyboard prevents keylogging.<br>
 Memory is actively protected against dumping attempts.<br>
 <h4>Overall Security Assessment:</h4>
-<p>The application provides robust protection against both memory-based attacks and network-based threats.</p> The use of memguard for memory protection, combined with the virtual keyboard's anti-keylogging features, creates multiple layers of security that make it extremely difficult for malware or spyware to capture sensitive data.
+<p>The application provides robust protection against both memory-based attacks and network-based threats.</p> 
+<p>The use of memguard for memory protection, combined with the virtual keyboard's anti-keylogging features, creates multiple layers of security that make it extremely difficult for malware or spyware to capture sensitive data.</p>
