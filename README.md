@@ -37,7 +37,7 @@ sudo -u www-data /usr/local/go/bin/go build -v \
 <pre><code>
 # 7. Hardening del binario
 sudo setcap cap_sys_ptrace,cap_net_admin=ep nofuture
-sudo chmod 0711 nofuture    
+sudo chmod 0700 nofuture    
     </code></pre>
     
 <strong>MemGuard Initialization & Configuration:</strong><br>
