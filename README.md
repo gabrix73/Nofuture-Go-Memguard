@@ -2,11 +2,11 @@
 
 <strong>MemGuard Initialization & Configuration:</strong><br>
 
-        <pre><code>
+<pre>
         memguard.CatchInterrupt()
 memguard.Purge()
 unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)
-</code></pre>
+</pre>
         <ul>
             <li><strong>Secure Memory Locking:</strong> Prevents swapping sensitive data to disk</li>
             <li><strong>Interrupt Handling:</strong> Automatic memory purge on SIGINT/SIGTERM</li>
