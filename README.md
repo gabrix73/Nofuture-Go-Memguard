@@ -1,5 +1,32 @@
 <strong>Nofuture.go - debian 12 install</strong><br><br>
+<strong>Core Components Build Process</strong>
+<pre><code>sudo apt-get update && sudo apt-get install -y \
+    cmake ninja-build gcc ligit clone --depth 1 https://github.com/open-quantum-safe/liboqs && cd liboqs
+mkdir build && cd build
+cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
+    -DOQS_USE_OPENSSL=ON \
+    -DOQS_DIST_BUILD=ON \
+    -DOQS_OPTIMIZED_BUILD=ON \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DOQS_BUILD_ONLY_LIB=ON ..bssl-dev libtool autoconf
+</code></pre>
+<pre><code>ninja
+sudo ninja install
+sudo ldconfig
 
+# 4. Configurazione Go environment
+export CGO_CFLAGS="-O3 -march=native -fstack-protector-strong -D_FORTIFY_SOURCE=2"
+export CGO_LDFLAGS="-Wl,-z,relro,-z,now -loqs -lssl -lcrypto"
+export GOFLAGS="-buildvcs=false"
+
+# 5. Inizializzazione modulo Go
+sudo -u www-data /usr/local/go/bin/go mod init nofuture
+sudo -u www-data /usr/local/go/bin/go get -v \
+    github.com/awnumar/memguard@v0.22.3 \
+    github.com/open-quantum-safe/liboqs-go@latest \
+    golang.org/x/crypto@latest \
+    golang.org/x/sys@latest</code></pre>
+    
 <strong>MemGuard Initialization & Configuration:</strong><br>
 
 <pre><code>
