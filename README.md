@@ -1,4 +1,4 @@
-    <b>Nofuture.go - Post-Quantum Cryptographic System</b>
+Nofuture.go - Post-Quantum Cryptographic System
 
   
         <b>MemGuard Initialization & Configuration</b>
