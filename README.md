@@ -1,14 +1,6 @@
-<head>
-    <meta charset="UTF-8">
-    <title>Nofuture.go - Post-Quantum Cryptographic Core Documentation</title>
-    <style>
-        /* Maintain previous styling */
-    </style>
-</head>
-<body>
     <h1>Nofuture.go - Post-Quantum Cryptographic System</h1>
 
-    <div class="section">
+  
         <h2>MemGuard Initialization & Configuration</h2>
         <pre><code>memguard.CatchInterrupt()
 memguard.Purge()
@@ -18,9 +10,8 @@ unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)</code></pre>
             <li><strong>Interrupt Handling:</strong> Automatic memory purge on SIGINT/SIGTERM</li>
             <li><strong>Deep Memory Purge:</strong> Secure wiping of allocated buffers</li>
         </ul>
-    </div>
 
-    <div class="section">
+
         <h2>MemGuard in Key Lifecycle Management</h2>
         <pre><code>passphrase, _ := memguard.NewImmutableRandom(32)
 defer passphrase.Destroy()</code></pre>
@@ -29,9 +20,7 @@ defer passphrase.Destroy()</code></pre>
             <li><strong>Ephemeral Storage:</strong> Keys exist only in protected memory</li>
             <li><strong>Automatic Destruction:</strong> Guaranteed wipe with defer</li>
         </ul>
-    </div>
 
-    <div class="section">
         <h2>Enclave-Based Cryptography</h2>
         <pre><code>func deriveEnclaveKey(passphrase *memguard.Enclave) {
     passBuf, _ := passphrase.Open()
@@ -42,9 +31,8 @@ defer passphrase.Destroy()</code></pre>
             <li><strong>Controlled Exposure:</strong> Temporary buffer access patterns</li>
             <li><strong>Zero-Copy Architecture:</strong> Minimize memory exposure</li>
         </ul>
-    </div>
 
-    <div class="section">
+
         <h2>Quantum-Safe Key Exchange</h2>
         <pre><code>pubKey, secKey, _ := quantumKEMKeyPair()
 defer pubKey.Destroy()
@@ -58,9 +46,7 @@ defer secKey.Destroy()</code></pre>
             </li>
             <li><strong>Zeroization on Completion:</strong> Guaranteed key destruction</li>
         </ul>
-    </div>
 
-    <div class="section">
         <h2>Secure Session Management</h2>
         <pre><code>type QuantumSession struct {
     sessionKey   *memguard.Enclave
@@ -71,9 +57,8 @@ defer secKey.Destroy()</code></pre>
             <li><strong>Forward Secrecy:</strong> Ephemeral session keys</li>
             <li><strong>Compartmentalization:</strong> Isolated memory regions per session</li>
         </ul>
-    </div>
 
-    <div class="section">
+
         <h2>Memory-Hardened Cryptography</h2>
         <pre><code>lockedKey, _ := memguard.NewImmutableFromBytes(key)
 defer lockedKey.Destroy()</code></pre>
@@ -92,9 +77,7 @@ defer lockedKey.Destroy()</code></pre>
                 </ul>
             </li>
         </ul>
-    </div>
 
-    <div class="section">
         <h2>MemGuard Best Practices</h2>
         <ul>
             <li>🔒 Always use <code>defer .Destroy()</code> with LockedBuffers</li>
@@ -103,7 +86,6 @@ defer lockedKey.Destroy()</code></pre>
             <li>🔄 Use rolling buffers for repeated operations</li>
             <li>🧹 Explicit <code>Purge()</code> after critical operations</li>
         </ul>
-    </div>
-</body>
+
 
 
