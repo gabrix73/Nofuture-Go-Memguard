@@ -7,11 +7,11 @@
                memguard.Purge()
                  unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)
 </pre>
-        <ul>
-            <li><strong>Secure Memory Locking:</strong> Prevents swapping sensitive data to disk</li>
-            <li><strong>Interrupt Handling:</strong> Automatic memory purge on SIGINT/SIGTERM</li>
-            <li><strong>Deep Memory Purge:</strong> Secure wiping of allocated buffers</li>
-        </ul>
+
+ <strong>Secure Memory Locking:</strong> Prevents swapping sensitive data to disk
+<strong>Interrupt Handling:</strong> Automatic memory purge on SIGINT/SIGTERM
+<strong>Deep Memory Purge:</strong> Secure wiping of allocated buffers
+        
 
 <strong>MemGuard in Key Lifecycle Management:</strong><br>
         <pre><code>passphrase, _ := memguard.NewImmutableRandom(32)
