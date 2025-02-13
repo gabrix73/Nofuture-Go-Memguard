@@ -119,14 +119,4 @@ defer lockedKey.Destroy()</code></pre>
             </li>
         </ul>
 
-<strong>MemGuard Best Practices</strong></b>
-        <ul>
-            <li>🔒 Always use <code>defer .Destroy()</code> with LockedBuffers</li>
-            <li>🛡️ Prefer <code>NewImmutable</code> for long-lived secrets</li>
-            <li>⚠️ Never expose Enclave contents to logging</li>
-            <li>🔄 Use rolling buffers for repeated operations</li>
-            <li>🧹 Explicit <code>Purge()</code> after critical operations</li>
-        </ul>
-
-
 
