@@ -1,7 +1,7 @@
-Nofuture.go - Post-Quantum Cryptographic System
+Nofuture.go - Post-Quantum Cryptographic System<br><br>
 
-  
-        <b>MemGuard Initialization & Configuration</b>
+MemGuard Initialization & Configuration:<br>
+
         <pre><code>memguard.CatchInterrupt()
 memguard.Purge()
 unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)</code></pre>
@@ -11,8 +11,7 @@ unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)</code></pre>
             <li><strong>Deep Memory Purge:</strong> Secure wiping of allocated buffers</li>
         </ul>
 
-
-        <b>MemGuard in Key Lifecycle Management</b>
+MemGuard in Key Lifecycle Management:<br>
         <pre><code>passphrase, _ := memguard.NewImmutableRandom(32)
 defer passphrase.Destroy()</code></pre>
         <ul>
@@ -21,7 +20,7 @@ defer passphrase.Destroy()</code></pre>
             <li><strong>Automatic Destruction:</strong> Guaranteed wipe with defer</li>
         </ul>
 
-        <b>Enclave-Based Cryptography</b>
+Enclave-Based Cryptography:<br>
         <pre><code>func deriveEnclaveKey(passphrase *memguard.Enclave) {
     passBuf, _ := passphrase.Open()
     defer passBuf.Destroy()
@@ -33,7 +32,7 @@ defer passphrase.Destroy()</code></pre>
         </ul>
 
 
-        <b>Quantum-Safe Key Exchange</b>
+Quantum-Safe Key Exchange:<br>
         <pre><code>pubKey, secKey, _ := quantumKEMKeyPair()
 defer pubKey.Destroy()
 defer secKey.Destroy()</code></pre>
@@ -47,7 +46,7 @@ defer secKey.Destroy()</code></pre>
             <li><strong>Zeroization on Completion:</strong> Guaranteed key destruction</li>
         </ul>
 
-        <b>Secure Session Management</b>
+Secure Session Management:<br>
         <pre><code>type QuantumSession struct {
     sessionKey   *memguard.Enclave
     remotePubKey *memguard.Enclave
@@ -59,7 +58,7 @@ defer secKey.Destroy()</code></pre>
         </ul>
 
 
-        <b>Memory-Hardened Cryptography</b>
+Memory-Hardened Cryptography:<br>
         <pre><code>lockedKey, _ := memguard.NewImmutableFromBytes(key)
 defer lockedKey.Destroy()</code></pre>
         <ul>
@@ -78,7 +77,7 @@ defer lockedKey.Destroy()</code></pre>
             </li>
         </ul>
 
-        <b>MemGuard Best Practices</b>
+MemGuard Best Practices</b>
         <ul>
             <li>🔒 Always use <code>defer .Destroy()</code> with LockedBuffers</li>
             <li>🛡️ Prefer <code>NewImmutable</code> for long-lived secrets</li>
