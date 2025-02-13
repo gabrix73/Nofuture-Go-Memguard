@@ -1,0 +1,31 @@
+[Unit]
+Description=Nofuture Memguard Post Quantum Encryption Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/nofuture
+ExecStart=/var/www/nofuture/nofuture
+Restart=always
+RestartSec=30
+Environment="GOPATH=/var/www/go"
+Environment="GOBIN=/var/www/go/bin"
+Environment="PATH=/usr/local/go/bin:/var/www/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# Security hardening
+ProtectSystem=strict
+PrivateTmp=true
+ProtectHome=tmpfs
+PrivateDevices=true
+NoNewPrivileges=true
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# Logging
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=nofuture
+
+[Install]
+WantedBy=multi-user.target
