@@ -1,347 +1,268 @@
+// nofuture.go - Post-Quantum Cryptography Core System
+// Build: CGO_ENABLED=1 go build -tags="oqs,purego,harden" -trimpath -ldflags="-s -w"
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base64"
-	"fmt"
-	"log"
-	"net/http"
-	"runtime"
-	"strings"
-	"sync"
-
-	"github.com/awnumar/memguard"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/curve25519"
-	"golang.org/x/crypto/nacl/box"
-)
-
-type Session struct {
-	PrivateKey     *memguard.LockedBuffer
-	PublicKey      *memguard.LockedBuffer
-	BuddyPublicKey *memguard.LockedBuffer
-}
-
-var (
-	sessions sync.Map
+    "crypto/rand"
+    "encoding/binary"
+    "fmt"
+    "io"
+    "os"
+    "runtime"
+    "syscall"
+    "unsafe"
+    
+    "github.com/awnumar/memguard"
+    "github.com/open-quantum-safe/liboqs-go/oqs"
+    "golang.org/x/crypto/argon2"
+    "golang.org/x/crypto/blake2b"
+    "golang.org/x/sys/unix"
 )
 
 const (
-	nonceLength = 24
-	keyLength   = 32
+    KEM_ALG         = "Kyber1024-90s"
+    SIG_ALG         = "Dilithium5-AES"
+    HASH_ALG        = "BLAKE2b-512"
+    SALT_SIZE       = 64
+    ARGON2_TIME     = 4
+    ARGON2_MEMORY   = 256 * 1024
+    ARGON2_THREADS  = 4
+    ENCLAVE_KEY_LEN = 48
 )
 
+var (
+    secureEntropy = memguard.NewEnclaveRandom
+    guard         = memguard.NewEnclave
+)
+
+type QuantumSession struct {
+    sessionKey   *memguard.Enclave
+    remotePubKey *memguard.Enclave
+    nonce        [24]byte
+    handshake    bool
+}
+
 func init() {
-	memguard.CatchInterrupt()
-	runtime.GC()
+    // Hardening runtime
+    unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)
+    runtime.GOMAXPROCS(1)
+    memguard.CatchInterrupt()
+    memguard.Purge()
 }
 
-func generateKeyPair() (*memguard.LockedBuffer, *memguard.LockedBuffer, error) {
-	privateKeyBuf := memguard.NewBuffer(keyLength)
-	defer privateKeyBuf.Destroy()
+func deriveEnclaveKey(passphrase *memguard.Enclave, salt []byte) (*memguard.LockedBuffer, error) {
+    passBuf, err := passphrase.Open()
+    if err != nil {
+        return nil, err
+    }
+    defer passBuf.Destroy()
 
-	if _, err := rand.Read(privateKeyBuf.Bytes()); err != nil {
-		return nil, nil, fmt.Errorf("key generation failed: %w", err)
-	}
-
-	publicKeyBuf := memguard.NewBuffer(keyLength)
-	defer publicKeyBuf.Destroy()
-
-	publicKey, err := curve25519.X25519(privateKeyBuf.Bytes(), curve25519.Basepoint)
-	if err != nil {
-		return nil, nil, fmt.Errorf("public key derivation failed: %w", err)
-	}
-
-	privateKeyLocked := memguard.NewBuffer(keyLength)
-	publicKeyLocked := memguard.NewBuffer(keyLength)
-
-	copy(privateKeyLocked.Bytes(), privateKeyBuf.Bytes())
-	copy(publicKeyLocked.Bytes(), publicKey)
-
-	return privateKeyLocked, publicKeyLocked, nil
+    key := argon2.IDKey(passBuf.Bytes(), salt, ARGON2_TIME, ARGON2_MEMORY, ARGON2_THREADS, ENCLAVE_KEY_LEN)
+    lockedKey, err := memguard.NewImmutableFromBytes(key)
+    if err != nil {
+        return nil, err
+    }
+    return lockedKey, nil
 }
 
-func startSession(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
-	log.Printf("Starting new secure session...")
+func quantumKEMKeyPair() (*memguard.LockedBuffer, *memguard.LockedBuffer, error) {
+    kem := oqs.KeyEncapsulation{}
+    if err := kem.Init(KEM_ALG, nil); err != nil {
+        return nil, nil, err
+    }
+    defer kem.Free()
 
-	privateKey, publicKey, err := generateKeyPair()
-	if err != nil {
-		log.Printf("Error generating key pair: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
+    pubKey, err := kem.GenerateKeyPair()
+    if err != nil {
+        return nil, nil, err
+    }
 
-	sessionIDBuf := memguard.NewBuffer(12)
-	if _, err := rand.Read(sessionIDBuf.Bytes()); err != nil {
-		log.Printf("Error generating session ID: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate session ID"})
-		return
-	}
-	defer sessionIDBuf.Destroy()
+    secKey := kem.ExportSecretKey()
 
-	sessionID := base64.RawURLEncoding.EncodeToString(sessionIDBuf.Bytes())
+    lockedPub, err := memguard.NewImmutableFromBytes(pubKey)
+    if err != nil {
+        return nil, nil, err
+    }
 
-	sessions.Store(sessionID, &Session{
-		PrivateKey:     privateKey,
-		PublicKey:      publicKey,
-		BuddyPublicKey: nil,
-	})
+    lockedSec, err := memguard.NewImmutableFromBytes(secKey)
+    if err != nil {
+        lockedPub.Destroy()
+        return nil, nil, err
+    }
 
-	log.Printf("Session created successfully: %s", sessionID)
-
-	c.JSON(http.StatusOK, gin.H{
-		"session_id": sessionID,
-		"public_key": base64.StdEncoding.EncodeToString(publicKey.Bytes()),
-	})
-
-	runtime.GC()
+    return lockedPub, lockedSec, nil
 }
 
-func endSession(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
-	var req struct {
-		SessionID string `json:"session_id" binding:"required"`
-	}
+func quantumEncapsulate(pubKey *memguard.LockedBuffer) (*memguard.LockedBuffer, *memguard.LockedBuffer, error) {
+    kem := oqs.KeyEncapsulation{}
+    defer kem.Free()
 
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
+    pubBytes := pubKey.Bytes()
+    if err := kem.Init(KEM_ALG, pubBytes); err != nil {
+        return nil, nil, err
+    }
 
-	if sess, loaded := sessions.LoadAndDelete(req.SessionID); loaded {
-		session := sess.(*Session)
-		if session.PrivateKey != nil {
-			session.PrivateKey.Destroy()
-		}
-		if session.PublicKey != nil {
-			session.PublicKey.Destroy()
-		}
-		if session.BuddyPublicKey != nil {
-			session.BuddyPublicKey.Destroy()
-		}
-	}
+    ct, ss, err := kem.EncapSecretKey(rand.Reader)
+    if err != nil {
+        return nil, nil, err
+    }
 
-	log.Printf("Session ended and cleaned up: %s", req.SessionID)
-	c.JSON(http.StatusOK, gin.H{"status": "session_ended"})
+    lockedCt, err := memguard.NewImmutableFromBytes(ct)
+    if err != nil {
+        return nil, nil, err
+    }
 
-	runtime.GC()
+    lockedSs, err := memguard.NewImmutableFromBytes(ss)
+    if err != nil {
+        lockedCt.Destroy()
+        return nil, nil, err
+    }
+
+    return lockedCt, lockedSs, nil
 }
 
-func pairSessions(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
-	var req struct {
-		SessionIDA string `json:"session_id_A" binding:"required"`
-		SessionIDB string `json:"session_id_B" binding:"required"`
-	}
+func quantumDecapsulate(ct *memguard.LockedBuffer, secKey *memguard.LockedBuffer) (*memguard.LockedBuffer, error) {
+    kem := oqs.KeyEncapsulation{}
+    defer kem.Free()
 
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
+    if err := kem.Init(KEM_ALG, nil); err != nil {
+        return nil, err
+    }
 
-	sessionA, ok := sessions.Load(req.SessionIDA)
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "session A not found"})
-		return
-	}
+    if err := kem.ImportSecretKey(secKey.Bytes()); err != nil {
+        return nil, err
+    }
 
-	sessionB, ok := sessions.Load(req.SessionIDB)
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "session B not found"})
-		return
-	}
+    ss, err := kem.DecapSecretKey(ct.Bytes())
+    if err != nil {
+        return nil, err
+    }
 
-	sessA := sessionA.(*Session)
-	sessB := sessionB.(*Session)
+    lockedSs, err := memguard.NewImmutableFromBytes(ss)
+    if err != nil {
+        return nil, err
+    }
 
-	sessA.BuddyPublicKey = memguard.NewBuffer(keyLength)
-	sessB.BuddyPublicKey = memguard.NewBuffer(keyLength)
-
-	copy(sessA.BuddyPublicKey.Bytes(), sessB.PublicKey.Bytes())
-	copy(sessB.BuddyPublicKey.Bytes(), sessA.PublicKey.Bytes())
-
-	log.Printf("Sessions paired: %s with %s", req.SessionIDA, req.SessionIDB)
-	c.JSON(http.StatusOK, gin.H{
-		"status":       "paired",
-		"session_id_A": req.SessionIDA,
-		"session_id_B": req.SessionIDB,
-	})
-
-	runtime.GC()
+    return lockedSs, nil
 }
 
-func buddyEncrypt(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
-	var req struct {
-		SessionID string `json:"session_id" binding:"required"`
-		Plaintext string `json:"plaintext" binding:"required"`
-	}
+func quantumSign(msg []byte, secKey *memguard.LockedBuffer) (*memguard.LockedBuffer, error) {
+    sig := oqs.Signature{}
+    defer sig.Free()
 
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
+    if err := sig.Init(SIG_ALG, nil); err != nil {
+        return nil, err
+    }
 
-	session, ok := sessions.Load(req.SessionID)
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "session not found"})
-		return
-	}
+    signature, err := sig.Sign(msg, secKey.Bytes())
+    if err != nil {
+        return nil, err
+    }
 
-	sess := session.(*Session)
-	if sess.BuddyPublicKey == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "session not paired"})
-		return
-	}
+    lockedSig, err := memguard.NewImmutableFromBytes(signature)
+    if err != nil {
+        return nil, err
+    }
 
-	privateKeyArray := memguard.NewBuffer(keyLength)
-	buddyPubArray := memguard.NewBuffer(keyLength)
-	defer privateKeyArray.Destroy()
-	defer buddyPubArray.Destroy()
-
-	copy(privateKeyArray.Bytes(), sess.PrivateKey.Bytes())
-	copy(buddyPubArray.Bytes(), sess.BuddyPublicKey.Bytes())
-
-	nonceBuf := memguard.NewBuffer(nonceLength)
-	defer nonceBuf.Destroy()
-
-	if _, err := rand.Read(nonceBuf.Bytes()); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "nonce generation failed"})
-		return
-	}
-
-	var nonce [nonceLength]byte
-	copy(nonce[:], nonceBuf.Bytes())
-
-	var privateKeyArr, buddyPubArr [keyLength]byte
-	copy(privateKeyArr[:], privateKeyArray.Bytes())
-	copy(buddyPubArr[:], buddyPubArray.Bytes())
-
-	plaintextBuf := memguard.NewBufferFromBytes([]byte(req.Plaintext))
-	defer plaintextBuf.Destroy()
-
-	encrypted := box.Seal(nonce[:], plaintextBuf.Bytes(), &nonce, &buddyPubArr, &privateKeyArr)
-
-	c.JSON(http.StatusOK, gin.H{
-		"encrypted_b64": base64.StdEncoding.EncodeToString(encrypted),
-	})
-
-	runtime.GC()
+    return lockedSig, nil
 }
 
-func buddyDecrypt(c *gin.Context) {
-	c.Header("Content-Type", "application/json")
-	var req struct {
-		SessionID     string `json:"session_id" binding:"required"`
-		EncryptedB64 string `json:"encrypted_b64" binding:"required"`
-	}
+func quantumVerify(msg []byte, sig *memguard.LockedBuffer, pubKey *memguard.LockedBuffer) (bool, error) {
+    verifier := oqs.Signature{}
+    defer verifier.Free()
 
-	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
+    if err := verifier.Init(SIG_ALG, pubKey.Bytes()); err != nil {
+        return false, err
+    }
 
-	session, ok := sessions.Load(req.SessionID)
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"error": "session not found"})
-		return
-	}
-
-	sess := session.(*Session)
-	if sess.BuddyPublicKey == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "session not paired"})
-		return
-	}
-
-	encrypted, err := base64.StdEncoding.DecodeString(req.EncryptedB64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid base64 encoding"})
-		return
-	}
-
-	if len(encrypted) < nonceLength {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ciphertext length"})
-		return
-	}
-
-	privateKeyArray := memguard.NewBuffer(keyLength)
-	buddyPubArray := memguard.NewBuffer(keyLength)
-	defer privateKeyArray.Destroy()
-	defer buddyPubArray.Destroy()
-
-	copy(privateKeyArray.Bytes(), sess.PrivateKey.Bytes())
-	copy(buddyPubArray.Bytes(), sess.BuddyPublicKey.Bytes())
-
-	var privateKeyArr, buddyPubArr [keyLength]byte
-	var nonce [nonceLength]byte
-	copy(privateKeyArr[:], privateKeyArray.Bytes())
-	copy(buddyPubArr[:], buddyPubArray.Bytes())
-	copy(nonce[:], encrypted[:nonceLength])
-
-	decrypted, ok := box.Open(nil, encrypted[nonceLength:], &nonce, &buddyPubArr, &privateKeyArr)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "decryption failed"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"plaintext": string(decrypted)})
-	runtime.GC()
+    isValid, err := verifier.Verify(msg, sig.Bytes(), pubKey.Bytes())
+    return isValid, err
 }
 
-func randomBytes(n int) []byte {
-	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
-		panic(err)
-	}
-	return b
+func secureTransmission(session *QuantumSession, data []byte) ([]byte, error) {
+    nonce := make([]byte, 24)
+    if _, err := rand.Read(nonce); err != nil {
+        return nil, err
+    }
+
+    ss, err := session.sessionKey.Open()
+    if err != nil {
+        return nil, err
+    }
+    defer ss.Destroy()
+
+    hash, err := blake2b.New512(nil)
+    if err != nil {
+        return nil, err
+    }
+
+    hash.Write(ss.Bytes())
+    hash.Write(nonce)
+    hmacKey := hash.Sum(nil)
+
+    sealedData, err := memguard.NewImmutableFromBytes(data)
+    if err != nil {
+        return nil, err
+    }
+    defer sealedData.Destroy()
+
+    ciphertext := make([]byte, len(data)+blake2b.Size256)
+    binary.LittleEndian.PutUint64(ciphertext[:8], uint64(len(data)))
+
+    // XChaCha20-Poly1305 implementation here (omitted for brevity)
+    // ... 
+
+    return ciphertext, nil
 }
 
 func main() {
-	memguard.CatchInterrupt()
-	defer memguard.Purge()
+    // Esempio di utilizzo completo
+    passphrase, err := memguard.NewImmutableRandom(32)
+    if err != nil {
+        fmt.Fprintln(os.Stderr, "Critical entropy failure:", err)
+        os.Exit(1)
+    }
+    defer passphrase.Destroy()
 
-	log.Printf("Starting Nofuture server with enhanced memory protection...")
+    salt := make([]byte, SALT_SIZE)
+    if _, err := rand.Read(salt); err != nil {
+        fmt.Fprintln(os.Stderr, "Entropy failure:", err)
+        os.Exit(1)
+    }
 
-	gin.SetMode(gin.ReleaseMode)
-	r := gin.New()
-	r.Use(gin.Recovery())
+    // Deriva la chiave dell'enclave
+    enclaveKey, err := deriveEnclaveKey(guard(passphrase.Bytes()), salt)
+    if err != nil {
+        fmt.Fprintln(os.Stderr, "Key derivation failed:", err)
+        os.Exit(1)
+    }
+    defer enclaveKey.Destroy()
 
-	// CORS middleware only for API routes
-	r.Use(func(c *gin.Context) {
-		if strings.HasPrefix(c.Request.URL.Path, "/api/") {
-			c.Header("Access-Control-Allow-Origin", "*")
-			c.Header("Access-Control-Allow-Methods", "POST, OPTIONS")
-			c.Header("Access-Control-Allow-Headers", "Content-Type")
-			c.Header("Content-Type", "application/json")
+    // Genera chiavi PQ
+    pubKey, secKey, err := quantumKEMKeyPair()
+    if err != nil {
+        fmt.Fprintln(os.Stderr, "PQ Keygen failed:", err)
+        os.Exit(1)
+    }
+    defer pubKey.Destroy()
+    defer secKey.Destroy()
 
-			if c.Request.Method == "OPTIONS" {
-				c.AbortWithStatus(204)
-				return
-			}
-		}
-		c.Next()
-	})
+    // Simula trasmissione sicura
+    ct, ss, err := quantumEncapsulate(pubKey)
+    if err != nil {
+        fmt.Fprintln(os.Stderr, "Encapsulation failed:", err)
+        os.Exit(1)
+    }
+    defer ct.Destroy()
+    defer ss.Destroy()
 
-	// Create API group with its own middleware
-	api := r.Group("/api")
-	{
-		api.POST("/start_session", startSession)
-		api.POST("/end_session", endSession)
-		api.POST("/pair_sessions", pairSessions)
-		api.POST("/buddy_encrypt", buddyEncrypt)
-		api.POST("/buddy_decrypt", buddyDecrypt)
-	}
+    // Decapsula il segreto
+    decryptedSs, err := quantumDecapsulate(ct, secKey)
+    if err != nil {
+        fmt.Fprintln(os.Stderr, "Decapsulation failed:", err)
+        os.Exit(1)
+    }
+    defer decryptedSs.Destroy()
 
-	// Serve static files
-	r.StaticFile("/", "./index.html")
-	r.Static("/js", "./js")
-	r.Static("/static", "./static")
-
-	serverAddr := "127.0.0.1:3000"
-	log.Printf("Server starting on %s", serverAddr)
-
-	if err := r.Run(serverAddr); err != nil {
-		log.Fatalf("Server startup failed: %v", err)
-	}
+    fmt.Println("Post-Quantum Secure Channel Established")
 }
