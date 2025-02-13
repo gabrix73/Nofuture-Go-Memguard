@@ -1,4 +1,4 @@
-<strong>Nofuture.go - Post-Quantum Cryptographic System</strong><br><br>
+<strong>Nofuture.go - debian 12 install</strong><br><br>
 
 <strong>MemGuard Initialization & Configuration:</strong><br>
 
