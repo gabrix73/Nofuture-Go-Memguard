@@ -27,6 +27,19 @@ sudo -u www-data /usr/local/go/bin/go get -v \
     golang.org/x/crypto@latest \
     golang.org/x/sys@latest</code></pre>
     
+# 6. Compilazione finale
+sudo -u www-data /usr/local/go/bin/go build -v \
+    -tags="oqs,purego,harden" \
+    -trimpath \
+    -ldflags="-s -w -extldflags '-Wl,-z,relro,-z,now'" \
+    -buildmode=pie \
+    -o nofuture nofuture.go
+
+# 7. Hardening del binario
+sudo setcap cap_sys_ptrace,cap_net_admin=ep nofuture
+sudo chmod 0711 nofuture    
+    <pre><code></code></pre>
+    
 <strong>MemGuard Initialization & Configuration:</strong><br>
 
 <pre><code>
