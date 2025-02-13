@@ -26,14 +26,14 @@ sudo -u www-data /usr/local/go/bin/go get -v \
     github.com/open-quantum-safe/liboqs-go@latest \
     golang.org/x/crypto@latest \
     golang.org/x/sys@latest</code></pre>
-    
+<pre><code>   
 # 6. Compilazione finale
 sudo -u www-data /usr/local/go/bin/go build -v \
     -tags="oqs,purego,harden" \
     -trimpath \
     -ldflags="-s -w -extldflags '-Wl,-z,relro,-z,now'" \
     -buildmode=pie \
-    -o nofuture nofuture.go
+    -o nofuture </code></pre> 
 
 # 7. Hardening del binario
 sudo setcap cap_sys_ptrace,cap_net_admin=ep nofuture
