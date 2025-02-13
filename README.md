@@ -4,8 +4,8 @@
 
 <pre><code>
         memguard.CatchInterrupt()
-               memguard.Purge()
-                 unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)</code>
+        memguard.Purge()
+        unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)</code>
 </pre>
 <ul>
  <li><strong>Secure Memory Locking:</strong> Prevents swapping sensitive data to disk</li>
