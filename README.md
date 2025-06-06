@@ -1,122 +1,46 @@
-<strong>Nofuture.go - debian 12 install</strong><br><br>
-<strong>Core Components Build Process</strong>
-<pre><code>sudo apt-get update && sudo apt-get install -y \
-    cmake ninja-build gcc ligit clone --depth 1 https://github.com/open-quantum-safe/liboqs && cd liboqs
-mkdir build && cd build
-cmake -GNinja -DCMAKE_BUILD_TYPE=Release \
-    -DOQS_USE_OPENSSL=ON \
-    -DOQS_DIST_BUILD=ON \
-    -DOQS_OPTIMIZED_BUILD=ON \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DOQS_BUILD_ONLY_LIB=ON ..bssl-dev libtool autoconf
-</code></pre>
-<pre><code>ninja
-sudo ninja install
-sudo ldconfig
+# 🛡️ nofuture.go — Ephemeral Post-Quantum Text Encryption
 
-# 4. Configurazione Go environment
-export CGO_CFLAGS="-O3 -march=native -fstack-protector-strong -D_FORTIFY_SOURCE=2"
-export CGO_LDFLAGS="-Wl,-z,relro,-z,now -loqs -lssl -lcrypto"
-export GOFLAGS="-buildvcs=false"
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8.svg)](https://golang.org)
+[![Security Hardened](https://img.shields.io/badge/security-hardened-brightgreen.svg)](#)
+[![Status: Experimental](https://img.shields.io/badge/status-experimental-yellow.svg)](#)
 
-# 5. Inizializzazione modulo Go
-sudo -u www-data /usr/local/go/bin/go mod init nofuture
-sudo -u www-data /usr/local/go/bin/go get -v \
-    github.com/awnumar/memguard@v0.22.3 \
-    github.com/open-quantum-safe/liboqs-go@latest \
-    golang.org/x/crypto@latest \
-    golang.org/x/sys@latest</code></pre>
-<pre><code>   
-# 6. Compilazione finale
-sudo -u www-data /usr/local/go/bin/go build -v \
-    -tags="oqs,purego,harden" \
-    -trimpath \
-    -ldflags="-s -w -extldflags '-Wl,-z,relro,-z,now'" \
-    -buildmode=pie \
-    -o nofuture </code></pre> 
-<pre><code>
-# 7. Hardening del binario
-sudo setcap cap_sys_ptrace,cap_net_admin=ep nofuture
-sudo chmod 0700 nofuture    
-    </code></pre>
-    
-<strong>MemGuard Initialization & Configuration:</strong><br>
+**nofuture.go** is a secure, ephemeral text encryption application designed to facilitate private communication — even across untrusted platforms — using post-quantum cryptography, memory-hard key management, and a local virtual keyboard for anti-keylogger defense.
 
-<pre><code>
-        memguard.CatchInterrupt()
-        memguard.Purge()
-        unix.Mlockall(unix.MCL_CURRENT | unix.MCL_FUTURE)</code>
-</pre>
-<ul>
- <li><strong>Secure Memory Locking:</strong> Prevents swapping sensitive data to disk</li>
-<li><strong>Interrupt Handling:</strong> Automatic memory purge on SIGINT/SIGTERM</li>
-<li><strong>Deep Memory Purge:</strong> Secure wiping of allocated buffers</li>
-        </ul>
+Its core purpose is simple but powerful:
 
-<strong>MemGuard in Key Lifecycle Management:</strong><br>
-        <pre><code>passphrase, _ := memguard.NewImmutableRandom(32)
-defer passphrase.Destroy()</code></pre>
-        <ul>
-            <li><strong>Immutable Buffers:</strong> Write-protected memory regions</li>
-            <li><strong>Ephemeral Storage:</strong> Keys exist only in protected memory</li>
-            <li><strong>Automatic Destruction:</strong> Guaranteed wipe with defer</li>
-        </ul>
+> 💬 **Encrypt sensitive text, exchange it via any mainstream chat, and make the keys disappear forever.**
 
-<strong>Enclave-Based Cryptography:</strong><br>
-        <pre><code>func deriveEnclaveKey(passphrase *memguard.Enclave) {
-    passBuf, _ := passphrase.Open()
-    defer passBuf.Destroy()
-}</code></pre>
-        <ul>
-            <li><strong>Double-Layer Protection:</strong> Enclave wrapping + locked buffers</li>
-            <li><strong>Controlled Exposure:</strong> Temporary buffer access patterns</li>
-            <li><strong>Zero-Copy Architecture:</strong> Minimize memory exposure</li>
-        </ul>
+---
 
+## 📦 Project Structure
 
-<strong>Quantum-Safe Key Exchange:</strong><br>
-        <pre><code>pubKey, secKey, _ := quantumKEMKeyPair()
-defer pubKey.Destroy()
-defer secKey.Destroy()</code></pre>
-        <ul>
-            <li><strong>MemGuard-Protected Keys:</strong>
-                <ul>
-                    <li>Public Key: Immutable locked buffer</li>
-                    <li>Private Key: Enclave-wrapped storage</li>
-                </ul>
-            </li>
-            <li><strong>Zeroization on Completion:</strong> Guaranteed key destruction</li>
-        </ul>
+- `cmd/` — CLI and runtime entry points
+- `internal/crypto` — Kyber, Dilithium, Argon2, BLAKE2b, XChaCha
+- `internal/memory` — memguard-backed key handling
+- `assets/` — frontend static files (keyboard UI, etc.)
+- `USAGE.md` — basic usage guide
 
-<strong>Secure Session Management:</strong><br>
-        <pre><code>type QuantumSession struct {
-    sessionKey   *memguard.Enclave
-    remotePubKey *memguard.Enclave
-}</code></pre>
-        <ul>
-            <li><strong>Enclave-Wrapped Session Keys:</strong> Encrypted memory storage</li>
-            <li><strong>Forward Secrecy:</strong> Ephemeral session keys</li>
-            <li><strong>Compartmentalization:</strong> Isolated memory regions per session</li>
-        </ul>
+---
 
+## 📖 Documentation
 
-<strong>Memory-Hardened Cryptography:</strong><br>
-        <pre><code>lockedKey, _ := memguard.NewImmutableFromBytes(key)
-defer lockedKey.Destroy()</code></pre>
-        <ul>
-            <li><strong>Argon2 in Protected Memory:</strong>
-                <ul>
-                    <li>Memory-hard derivation in locked buffers</li>
-                    <li>Secure salt handling</li>
-                </ul>
-            </li>
-            <li><strong>Multi-Layer Protection:</strong>
-                <ul>
-                    <li>mlock() system calls</li>
-                    <li>MADV_DONTDUMP flags</li>
-                    <li>Guard pages</li>
-                </ul>
-            </li>
-        </ul>
+- ✅ [How it works](#session-flow)
+- ✅ [Cryptographic primitives](#cryptographic-primitives)
+- ✅ [Memory protection](#key-generation--memory-protection)
+- ✅ [Virtual keyboard](#virtual-keyboard-anti-keylogger)
+- ✅ [Usage example](USAGE.md)
+
+---
+
+## 📜 License
+
+MIT License — see [`LICENSE`](./LICENSE)
+
+---
+
+## ✊ Built with love and defiance  
+Because **privacy isn’t a feature** — it’s a human right.
+
 
 
