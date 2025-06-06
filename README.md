@@ -100,6 +100,28 @@ Encrypted communication is based on shared **Session IDs**, which encapsulate th
 - Once both sides are synchronized, they can start exchanging encrypted text.
 
 ---
+## 📌 What Is the Session ID?
+
+The `Session ID` is not a simple string or UUID — it's a **cryptographic descriptor** of the secure session.  
+It contains all the necessary public information to allow the other party to **synchronize**, encrypt, and verify the session context.
+
+### 🔐 Composition of a Session ID
+
+- 🔑 The **public key** of the sender (Kyber1024-90s)
+- 🧬 A **nonce** — a unique 24-byte random seed
+- 🧠 Optionally, a digital signature (Dilithium5-AES) for verifying the identity
+- 🆔 A hashed session fingerprint using BLAKE2b
+
+> Think of it like a “temporary public key” for a one-time encrypted channel.
+
+### 🧩 Why it matters
+
+Sharing this `Session ID` allows another user to:
+- Derive a **shared secret** via post-quantum KEM
+- Bind their session securely to yours
+- Encrypt data you alone can decrypt (and vice versa)
+
+----
 
 ## 💥 End Session = Total Key Destruction
 
