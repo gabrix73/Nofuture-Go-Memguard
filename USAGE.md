@@ -32,23 +32,36 @@ Use any web-based messaging platform:
 
 ---
 
-### 3. Click “Generate Session ID” in nofuture.go
+### 3. Generate a Session ID
 
-This creates a secure post-quantum key pair and generates your session metadata.
+In `nofuture.go`, click **"Generate Session ID"**.  
+This creates a **post-quantum key pair**, generates a random nonce, and bundles them into your personal **Session ID**.
 
----
-
-### 4. Copy your Session ID and share it with your contact
-
-Paste it in your chat tab and send it to your conversation partner.
-
-> 🔐 The session ID contains no sensitive information and can be safely sent in cleartext.
+You can think of your `Session ID` like a **temporary public key**: it tells the other party how to encrypt messages for you.
 
 ---
 
-### 5. Your contact pastes your Session ID into their `nofuture.go`
+### 4. Share Your Session ID
 
-Once both ends are synced, the encryption tunnel is live.
+Copy your Session ID and paste it into your chat app.  
+Send it to your conversation partner. They will import it into their own instance of `nofuture.go`.
+
+> ✅ Session IDs contain **no sensitive private key data** — they are safe to transmit over standard channels.
+
+---
+
+### 5. Synchronize Sessions
+
+This is the **core step**:  
+When the other user imports your Session ID, their instance uses it to derive a **shared secret** and bind their session to yours.
+
+🔄 Once both users are synchronized:
+- Messages can be encrypted asymmetrically using XChaCha and the shared key
+- The session is protected against MITM (with optional signature validation)
+- The encrypted messages are now meaningful only to those inside the session
+
+> Without synchronization, decryption will fail.  
+> With it, communication is seamless, secure, and ephemeral.
 
 ---
 
