@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nofuture.go - Sicurezza Memguard Post-Quantum</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+      color: #0056b3;
+    }
+    pre {
+      background: #272822;
+      color: #f8f8f2;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    .lang-switch {
+      text-align: right;
+    }
+    button {
+      padding: 5px 10px;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+    .it {
+      background: #0056b3;
+      color: white;
+    }
+    .en {
+      background: #28a745;
+      color: white;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="lang-switch">
+    <button class="it" onclick="toggleLang('it')">🇮🇹 ITA</button>
+    <button class="en" onclick="toggleLang('en')">🇬🇧 ENG</button>
+  </div>
+
+  <!-- CONTENUTO ITALIANO -->
+  <div id="content-it">
+    <h1>nofuture.go - Sicurezza Memguard Post-Quantum</h1>
+    <p><strong>nofuture.go</strong> è una web app crittografica post-quantum da usare in un tab del browser, mentre in un altro hai una chat. La comunicazione è cifrata localmente, e le sessioni vengono sincronizzate usando un <strong>Session ID</strong>. Le chiavi sono protette in RAM con <code><a href="https://github.com/awnumar/memguard">memguard</a></code> e vengono eliminate a fine sessione.</p>
+
+    <h2>🔑 Panoramica operativa in 5 fasi</h2>
+    <ol>
+      <li><strong>Start Session:</strong> Genera chiavi e Session ID</li>
+      <li><strong>Share Session ID:</strong> Scambia l’ID con il tuo contatto</li>
+      <li><strong>Pair Sessions:</strong> Clic su “Pair” per sincronizzare</li>
+      <li><strong>Encrypt/Decrypt:</strong> Usa la sessione per messaggi sicuri</li>
+      <li><strong>End Session:</strong> Tutto viene cancellato</li>
+    </ol>
+    <hr>
+    <h2>📌 Cos'è il Session ID?</h2>
+    <p>Il <strong>Session ID</strong> rappresenta una sessione univoca sicura tra due dispositivi. Non è una chiave pubblica, ma una combinazione sicura di identificatori derivati da elementi crittografici.</p>
+    <ul>
+      <li><code>remotePubKey</code>: chiave pubblica remota</li>
+      <li><code>nonce</code>: numero casuale</li>
+      <li><code>sessionKey</code>: segreto condiviso</li>
+    </ul>
+    <pre><code>
+hash := sha256.New()
+hash.Write(pubKey.Bytes())
+hash.Write(nonce[:])
+sessionID := hex.EncodeToString(hash.Sum(nil))
+    </code></pre>
+<hr>
+    <h2>🤝 Pairing: Associazione automatica delle sessioni</h2>
+    <p>Dopo lo scambio dei <code>session-ID</code>, cliccando su <strong>“Pair”</strong> l'app avvia un processo automatico per derivare una chiave condivisa sicura.</p>
+    <ul>
+      <li>Identifica la sessione remota tramite ID</li>
+      <li>Esegue un key exchange post-quantum (Kyber)</li>
+      <li>Deriva una chiave condivisa nota solo ai due client</li>
+    </ul>
+    <p><strong>Nota:</strong> Nessuna chiave pubblica viene scambiata manualmente.</p>
+    <hr>
+    <h2>🧠 Protezione delle chiavi in RAM</h2>
+    <p><code>nofuture.go</code> protegge tutte le chiavi in RAM usando <strong><a href="https://github.com/awnumar/memguard">memguard</a></strong>, che impedisce accessi anche da parte di root o strumenti di debug.</p>
+    <ul>
+      <li>RAM cifrata fuori dall'heap</li>
+      <li>mlockall() per evitare swap</li>
+      <li>Autodistruzione al segnale</li>
+      <li>Invisibilità al GC</li>
+    </ul>
+
+    <table>
+      <thead><tr><th>Minaccia</th><th>Contromisura</th></tr></thead>
+      <tbody>
+        <tr><td>gdb / lsof</td><td>Memoria fuori heap, cifrata</td></tr>
+        <tr><td>Accesso root</td><td>RAM bloccata con mlock</td></tr>
+        <tr><td>Keylogger</td><td>Le chiavi non sono mai digitate</td></tr>
+        <tr><td>Cold boot</td><td>Memoria già purgata</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+    <h2>🖱️ Tastiera virtuale anti-keylogger</h2>
+    <p>Per proteggere la digitazione del testo, l’app può usare una tastiera virtuale con disposizione dei tasti casuale a ogni apertura.</p>
+    <ul>
+      <li>Click al posto della tastiera fisica</li>
+      <li>Nessun evento keypress intercettabile</li>
+      <li>Previene keylogger e spyware locali</li>
+    </ul>
+
+  </div>
+
+  <!-- CONTENUTO INGLESE -->
+  <div id="content-en" class="hidden">
+    <h1>nofuture.go - Memguard Post-Quantum Security</h1>
+    <p><strong>nofuture.go</strong> is a post-quantum crypto tool used in a browser tab while using a chat app in another. Messages are encrypted locally and exchanged via synchronized <strong>Session IDs</strong>. Keys are memory-hardened with <code><a href="https://github.com/awnumar/memguard">memguard</a></code> and purged after session ends.</p>
+
+    <h2>🔑 5-Step Operational Overview</h2>
+    <ol>
+      <li><strong>Start Session:</strong> Generate keys and Session ID</li>
+      <li><strong>Share Session ID:</strong> Send it to your contact</li>
+      <li><strong>Pair Sessions:</strong> Click “Pair” to sync and derive key</li>
+      <li><strong>Encrypt/Decrypt:</strong> Secure messages flow between tabs</li>
+      <li><strong>End Session:</strong> Keys are securely destroyed</li>
+    </ol>
+    <hr>
+    <h2>📌 What is the Session ID?</h2>
+    <p>The <strong>Session ID</strong> uniquely identifies a secure session between two peers. It's derived from a mix of cryptographic elements—not a public key.</p>
+    <ul>
+      <li><code>remotePubKey</code>: peer’s public key</li>
+      <li><code>nonce</code>: random number</li>
+      <li><code>sessionKey</code>: shared secret</li>
+    </ul>
+    <pre><code>
+hash := sha256.New()
+hash.Write(pubKey.Bytes())
+hash.Write(nonce[:])
+sessionID := hex.EncodeToString(hash.Sum(nil))
+    </code></pre>
+     <hr>
+    <h2>🤝 Pairing: Secure automatic linking</h2>
+    <p>After exchanging <code>session-IDs</code>, just click <strong>“Pair”</strong>. The system automatically derives a shared key using Kyber post-quantum KEM.</p>
+    <ul>
+      <li>Identifies the remote session by ID</li>
+      <li>Performs post-quantum key exchange</li>
+      <li>The final key is only known by the two paired clients</li>
+    </ul>
+    <p><strong>No manual key sharing is needed.</strong></p>
+
+
+
+    <hr>
+    <h2>🧠 How are keys protected in RAM?</h2>
+    <p>All key materials are protected with <strong><a href="https://github.com/awnumar/memguard">memguard</a></strong>, which allocates encrypted memory buffers off-heap, blocks OS access (even root), and purges everything on termination.</p>
+    <ul>
+      <li>Encrypted, locked memory buffers</li>
+      <li>No exposure to GC or debugging tools</li>
+      <li>Purged instantly on crash</li>
+      <li>Swap disabled with mlock()</li>
+    </ul>
+
+    <table>
+      <thead><tr><th>Threat</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td>gdb / lsof</td><td>Data is not in readable heap</td></tr>
+        <tr><td>Root access</td><td>Memory protected with mlock</td></tr>
+        <tr><td>Keyloggers</td><td>Keys never typed</td></tr>
+        <tr><td>Cold boot</td><td>Memory purged</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+    <h2>🖱️ Virtual keyboard against keyloggers</h2>
+    <p>A virtual keyboard with randomized layout protects text from keyloggers. No keystroke events are triggered.</p>
+    <ul>
+      <li>Click-based input bypasses physical keyboard</li>
+      <li>Random layout each time</li>
+      <li>Blocks local spyware and keyloggers</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  function toggleLang(lang) {
+    document.getElementById("content-it").classList.toggle("hidden", lang !== "it");
+    document.getElementById("content-en").classList.toggle("hidden", lang !== "en");
+  }
+</script>
+</body>
+</html>
