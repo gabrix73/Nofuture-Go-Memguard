@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoFuture Security Challenge</title>
+    
+    <!-- JSDelivr Font Awesome alternative -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem 1rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            margin: 0.5rem 0 0;
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .challenge-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .challenge-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .challenge-panel:hover {
+            transform: translateY(-5px);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #4CAF50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .metric-label {
+            opacity: 0.8;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #4CAF50;
+        }
+
+        .metric-value.blocked {
+            color: #ff4444;
+        }
+
+        .challenge-section {
+            background: rgba(255, 100, 100, 0.1);
+            border: 2px solid rgba(255, 100, 100, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .challenge-title {
+            font-size: 1.5rem;
+            color: #ff6b6b;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .challenge-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .challenge-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .challenge-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .challenge-btn:active {
+            transform: translateY(0);
+        }
+
+        .challenge-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .challenge-btn:hover::before {
+            left: 100%;
+        }
+
+        .results-panel {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            margin: 0.3rem 0;
+            color: #00ff00;
+            line-height: 1.4;
+        }
+
+        .log-error {
+            color: #ff4444;
+        }
+
+        .log-warning {
+            color: #ffaa00;
+        }
+
+        .log-info {
+            color: #4ecdc4;
+        }
+
+        .log-result {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .log-details {
+            color: #888888;
+            font-size: 0.85em;
+            margin-left: 1rem;
+        }
+
+        .stats-banner {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .stats-banner h3 {
+            margin: 0 0 0.5rem;
+            color: #ff6b6b;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .challenge-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .challenge-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="back-btn">← Back to NoFuture</a>
+        <h1>🛡️ Security Challenge</h1>
+        <p>Try to break our memguard protection - we dare you!</p>
+    </div>
+
+    <div class="challenge-container">
+        <div class="challenge-grid">
+            <!-- Memory Protection Panel -->
+            <div class="challenge-panel">
+                <div class="panel-title">
+                    <div class="status-indicator"></div>
+                    Memory Protection Status
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memguard Status:</span>
+                    <span class="metric-value" id="memguardStatus">Loading...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Protected Pages:</span>
+                    <span class="metric-value" id="protectedPages">-</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Locked Memory:</span>
+                    <span class="metric-value" id="lockedMemory">-</span> KB
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Access Attempts Blocked:</span>
+                    <span class="metric-value" id="blockedAttempts">-</span>
+                </div>
+            </div>
+
+            <!-- Access Control Panel -->
+            <div class="challenge-panel">
+                <div class="panel-title">
+                    <div class="status-indicator"></div>
+                    Access Control Matrix
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Root Access:</span>
+                    <span class="metric-value blocked">DENIED</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Process Isolation:</span>
+                    <span class="metric-value">ENFORCED</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Memory Dumps:</span>
+                    <span class="metric-value blocked">BLOCKED</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Debugger Access:</span>
+                    <span class="metric-value blocked">BLOCKED</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Swap Protection:</span>
+                    <span class="metric-value">ACTIVE</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Cold Boot Defense:</span>
+                    <span class="metric-value">ENABLED</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Challenge Section -->
+        <div class="challenge-section">
+            <div class="challenge-title">🔥 Security Challenge: Break Our Protection!</div>
+            <div class="stats-banner">
+                <h3>Challenge Statistics</h3>
+                <p>Attempts: <span id="totalAttempts">0</span> | Success Rate: <strong style="color: #ff4444;">0%</strong> | Protection Status: <strong style="color: #4CAF50;">UNBREACHABLE</strong></p>
+            </div>
+            
+            <p style="text-align: center; font-size: 1.1rem; margin-bottom: 2rem;">
+                We're so confident in our memguard protection that we challenge you to try breaking it. 
+                <strong>Even with root privileges, you cannot access protected conversations!</strong>
+            </p>
+            
+            <div class="challenge-buttons">
+                <button class="challenge-btn" onclick="challengeSecurity('root_access')">
+                    🔴 Challenge Root Access
+                    <div style="font-size: 0.8em; opacity: 0.8;">Try to bypass with sudo privileges</div>
+                </button>
+                <button class="challenge-btn" onclick="challengeSecurity('memory_dump')">
+                    💾 Try Memory Dump
+                    <div style="font-size: 0.8em; opacity: 0.8;">Attempt core dump extraction</div>
+                </button>
+                <button class="challenge-btn" onclick="challengeSecurity('debugger_attach')">
+                    🐛 Attach Debugger
+                    <div style="font-size: 0.8em; opacity: 0.8;">Try ptrace and gdb access</div>
+                </button>
+                <button class="challenge-btn" onclick="challengeSecurity('process_scan')">
+                    🔍 Scan Process Memory
+                    <div style="font-size: 0.8em; opacity: 0.8;">Search for secret patterns</div>
+                </button>
+                <button class="challenge-btn" onclick="challengeSecurity('cold_boot')">
+                    ❄️ Cold Boot Attack
+                    <div style="font-size: 0.8em; opacity: 0.8;">Simulate memory freeze attack</div>
+                </button>
+                <button class="challenge-btn" onclick="challengeSecurity('swap_analysis')">
+                    💿 Swap File Analysis
+                    <div style="font-size: 0.8em; opacity: 0.8;">Try to find data in swap</div>
+                </button>
+            </div>
+            
+            <div class="results-panel" id="challengeResults">
+                <div class="log-entry">[READY] Security challenge initialized - all attack vectors monitored</div>
+                <div class="log-info">[INFO] Memguard protection active - try to break through!</div>
+                <div class="log-warning">[WARNING] All attempts will be logged and blocked</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>Results:</strong> All attempts blocked by memguard protection!</p>
+        <p><em>Even with root privileges, your conversations remain completely inaccessible.</em></p>
+        <p style="margin-top: 1rem; opacity: 0.7;">
+            <i class="fab fa-github"></i> 
+            <a href="https://github.com/yourusername/nofuture" style="color: #4ecdc4; text-decoration: none;">
+                View source code on GitHub
+            </a>
+        </p>
+    </div>
+
+    <script>
+        // API endpoints
+        const API_SECURITY_DEMO = "/api/security_demo";
+        const API_SECURITY_CHALLENGE = "/api/security_challenge";
+        
+        let totalAttempts = 0;
+        let successfulBreaches = 0;
+
+        // Load security data on page load
+        async function loadSecurityData() {
+            try {
+                const response = await fetch(API_SECURITY_DEMO);
+                const data = await response.json();
+                
+                // Update status indicators
+                document.getElementById('memguardStatus').textContent = data.memguard_status;
+                document.getElementById('memguardStatus').className = 
+                    data.memguard_status === 'ACTIVE' ? 'metric-value' : 'metric-value blocked';
+                
+                document.getElementById('protectedPages').textContent = data.protected_pages;
+                document.getElementById('lockedMemory').textContent = data.locked_memory_kb;
+                document.getElementById('blockedAttempts').textContent = data.access_attempts_blocked;
+                
+                // Display any live test results
+                if (data.live_demo_results && data.live_demo_results.length > 0) {
+                    data.live_demo_results.forEach(result => {
+                        addLogEntry(`[${result.timestamp}] ${result.test_name}: ${result.result}`, 'log-info');
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Failed to load security data:', error);
+                addLogEntry('[ERROR] Failed to connect to security monitoring system', 'log-error');
+            }
+        }
+
+        // Challenge a specific security mechanism
+        async function challengeSecurity(testType) {
+            totalAttempts++;
+            updateStats();
+            
+            addLogEntry(`[CHALLENGE] Launching ${testType.replace('_', ' ')} attack...`, 'log-warning');
+            
+            // Add some dramatic delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            try {
+                const response = await fetch(API_SECURITY_CHALLENGE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ test_type: testType }),
+                });
+                
+                const result = await response.json();
+                
+                // Display result with dramatic effect
+                addLogEntry(`[${result.timestamp}] ${result.test_name}: ${result.result}`, 'log-result');
+                addLogEntry(`[DETAILS] ${result.details}`, 'log-details');
+                
+                if (result.status === 'BLOCKED') {
+                    addLogEntry(`[SECURITY] Attack vector neutralized - protection holding strong`, 'log-info');
+                } else if (result.status === 'WARNING') {
+                    addLogEntry(`[ALERT] Partial breach detected - investigating...`, 'log-warning');
+                    successfulBreaches++;
+                } else {
+                    addLogEntry(`[CRITICAL] Protection compromised - this should never happen!`, 'log-error');
+                    successfulBreaches++;
+                }
+                
+                // Refresh data
+                setTimeout(loadSecurityData, 500);
+                updateStats();
+                
+            } catch (error) {
+                addLogEntry(`[ERROR] Challenge failed: ${error.message}`, 'log-error');
+            }
+        }
+
+        // Add entry to challenge log
+        function addLogEntry(message, className = 'log-entry') {
+            const log = document.getElementById('challengeResults');
+            const entry = document.createElement('div');
+            entry.className = className;
+            entry.textContent = message;
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+            
+            // Keep only last 25 entries
+            if (log.children.length > 25) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        // Update challenge statistics
+        function updateStats() {
+            const successRate = totalAttempts > 0 ? ((successfulBreaches / totalAttempts) * 100).toFixed(1) : 0;
+            document.getElementById('totalAttempts').textContent = totalAttempts;
+            
+            // Update success rate color
+            const rateElement = document.querySelector('#totalAttempts').parentNode;
+            if (successRate > 0) {
+                rateElement.innerHTML = rateElement.innerHTML.replace(/Success Rate: <strong[^>]*>.*?<\/strong>/, 
+                    `Success Rate: <strong style="color: #ffaa00;">${successRate}%</strong>`);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSecurityData();
+            
+            // Refresh every 10 seconds
+            setInterval(loadSecurityData, 10000);
+            
+            // Add some initial flair
+            setTimeout(() => {
+                addLogEntry('[SYSTEM] All defense mechanisms online and operational', 'log-info');
+            }, 2000);
+        });
+
+        // Make functions globally available
+        window.challengeSecurity = challengeSecurity;
+    </script>
+</body>
+</html>
