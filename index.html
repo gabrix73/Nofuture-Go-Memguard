@@ -256,21 +256,32 @@
 
         #keyboardTooltip {
             position: absolute;
-            width: 280px;
+            width: 320px;
             background-color: #2a2a2a;
             color: #fff;
             border: 2px solid #444;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            padding: 10px;
+            padding: 12px;
             z-index: 1000;
             display: none;
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.4;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
             margin-bottom: 10px;
+        }
+
+        #keyboardTooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #444 transparent transparent transparent;
         }
 
         #showKeyboardButton {
@@ -338,6 +349,192 @@
             transform: rotate(180deg);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z'/%3E%3C/svg%3E");
         }
+
+        /* Mainstream Chat Links Styles */
+        .mainstream-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mainstream-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #ffffff;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .chat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .chat-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            text-decoration: none;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.4s ease;
+        }
+
+        .chat-link:hover::before {
+            left: 100%;
+        }
+
+        .chat-link:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-link:hover .chat-icon {
+            transform: scale(1.1);
+        }
+
+        .chat-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            text-align: center;
+        }
+
+        .chat-description {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        /* Colori brandizzati per gli hover */
+        .messenger:hover { background: rgba(0, 132, 255, 0.15); }
+        .whatsapp:hover { background: rgba(37, 211, 102, 0.15); }
+        .instagram:hover { background: rgba(225, 48, 108, 0.15); }
+        .twitter:hover { background: rgba(29, 161, 242, 0.15); }
+        .teams:hover { background: rgba(106, 90, 205, 0.15); }
+        .skype:hover { background: rgba(0, 175, 240, 0.15); }
+        .google-chat:hover { background: rgba(52, 168, 83, 0.15); }
+        .discord:hover { background: rgba(114, 137, 218, 0.15); }
+
+        /* Readme and Challenge button styles */
+        .nav-buttons {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .nav-btn {
+            position: relative;
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            margin: 0 0.5rem;
+        }
+
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .challenge-btn {
+            background-color: rgba(255, 100, 100, 0.2);
+            border-color: rgba(255, 100, 100, 0.4);
+        }
+
+        .challenge-btn:hover {
+            background-color: rgba(255, 100, 100, 0.3);
+        }
+
+        /* Tooltip styles */
+        .nav-tooltip {
+            position: absolute;
+            width: 240px;
+            background-color: #2a2a2a;
+            color: #fff;
+            border: 2px solid #444;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            z-index: 1000;
+            display: none;
+            font-size: 12px;
+            line-height: 1.4;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+        }
+
+        .nav-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #444 transparent transparent transparent;
+        }
+
+        #challengeTooltip {
+            width: 260px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .nav-btn {
+                display: block;
+                margin: 0.5rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chat-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -349,24 +546,119 @@
     <button id="themeToggle">Day</button>
 
     <header>
-        <h1>Nofuture Buddy Web Interface - Memguard GO Powered</h1>
+        <h1>Nofuture Web Interface - Memguard Post Quantum Powered</h1>
     </header>
 
     <main>
         <div id="statusMessage" class="status-message"></div>
 
-        <p class="instructions">
-             <ul>
-<li>1. Generate Session: Create quantum-resistant session ID using hardware RNG</li>  
-<li>2. Share Session ID: Exchange via encrypted QR code (AES-256-GCM)  </li>
-<li>3. Pair Session: Mutual authentication with post-quantum signatures  </li>
-<li>4. Input Handling: Virtual keyboard → secure buffer (mlock+ASLR)  </li>
-<li>5. Encrypt: Hybrid encryption (Kyber1024 + XChaCha20)  </li>
-<li>6. Secure Transfer: Copy armored ciphertext (Base122 encoded) to any channel </li>             
-         </ul>
-        </p>
+        <!-- Mainstream Chat Links Section -->
+        <div class="mainstream-section">
+            <h3 class="mainstream-title">🔗 Quick Access to Mainstream Chats</h3>
+            <div class="chat-grid">
+                <!-- Facebook Messenger -->
+                <a href="https://www.messenger.com/" target="_blank" class="chat-link messenger">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12,2C6.36,2 2,6.13 2,11.7C2,14.61 3.19,17.14 5.14,18.87C5.3,19 5.4,19.22 5.41,19.44L5.46,21.22C5.5,21.79 6.07,22.16 6.59,21.93L8.57,21.07C8.74,21 8.93,20.97 9.1,21C10.04,21.18 11.03,21.29 12,21.29C17.64,21.29 22,17.16 22,11.7C22,6.13 17.64,2 12,2M12,4C16.59,4 20,7.15 20,11.7C20,16.25 16.59,19.29 12,19.29C11.16,19.29 10.26,19.19 9.44,19.05C9.27,19.03 9.1,19.05 8.95,19.12L7.81,19.57L7.79,18.87C7.78,18.22 7.5,17.61 7.03,17.16C5.27,15.73 4,13.88 4,11.7C4,7.15 7.41,4 12,4Z"/>
+                    </svg>
+                    <div class="chat-name">M3ss4nger</div>
+                    <div class="chat-description">Fac3b00k</div>
+                </a>
 
-<p><a href="readme3.html">Readme</a></p>
+                <!-- WhatsApp -->
+                <a href="https://web.whatsapp.com/" target="_blank" class="chat-link whatsapp">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472,14.382c-0.297-0.149-1.758-0.867-2.03-0.967c-0.273-0.099-0.471-0.148-0.67,0.15c-0.197,0.297-0.767,0.966-0.94,1.164c-0.173,0.199-0.347,0.223-0.644,0.075c-0.297-0.15-1.255-0.463-2.39-1.475c-0.883-0.788-1.48-1.761-1.653-2.059c-0.173-0.297-0.018-0.458,0.13-0.606c0.134-0.133,0.298-0.347,0.446-0.52c0.149-0.174,0.198-0.298,0.298-0.497c0.099-0.198,0.05-0.371-0.025-0.52C10.045,9.302,9.667,7.646,9.447,7.094c-0.197-0.494-0.402-0.427-0.67-0.436C8.552,6.649,8.353,6.649,8.154,6.649c-0.198,0-0.52,0.074-0.792,0.372c-0.272,0.297-1.04,1.016-1.04,2.479c0,1.462,1.065,2.875,1.213,3.074c0.149,0.198,2.095,3.2,5.076,4.487c0.709,0.306,1.262,0.489,1.694,0.625c0.712,0.227,1.36,0.195,1.871,0.118c0.571-0.085,1.758-0.719,2.006-1.413c0.248-0.694,0.248-1.289,0.173-1.413C17.977,14.785,17.779,14.531,17.472,14.382z M12.019,21.515c-1.764,0-3.492-0.473-5.016-1.369l-0.36-0.214l-3.741,0.982l0.999-3.648l-0.235-0.374c-0.99-1.574-1.512-3.393-1.512-5.26c0-5.445,4.433-9.878,9.888-9.878c2.64,0,5.122,1.03,6.988,2.898c1.866,1.869,2.893,4.352,2.892,6.993C21.922,17.086,17.487,21.515,12.019,21.515z M12.019,2.985C6.755,2.985,2.454,7.287,2.454,12.55c0,1.836,0.476,3.635,1.386,5.22L1.004,23l5.374-1.409c1.513,0.821,3.219,1.255,4.954,1.255c5.266,0,9.567-4.302,9.567-9.565C20.899,7.318,16.597,3.016,12.019,2.985z"/>
+                    </svg>
+                    <div class="chat-name">Wh4tsApp</div>
+                    <div class="chat-description">Web</div>
+                </a>
+
+                <!-- Instagram -->
+                <a href="https://www.instagram.com/direct/inbox/" target="_blank" class="chat-link instagram">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z"/>
+                    </svg>
+                    <div class="chat-name">1nst4gr4m</div>
+                    <div class="chat-description">Direct</div>
+                </a>
+
+                <!-- X (Twitter) -->
+                <a href="https://twitter.com/messages" target="_blank" class="chat-link twitter">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <div class="chat-name">X</div>
+                    <div class="chat-description">Messages</div>
+                </a>
+
+                <!-- Microsoft Teams -->
+                <a href="https://teams.microsoft.com/" target="_blank" class="chat-link teams">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.5,8A2.5,2.5 0 0,1 23,10.5V16.5A2.5,2.5 0 0,1 20.5,19H12.5A2.5,2.5 0 0,1 10,16.5V13H8.5A2.5,2.5 0 0,1 6,10.5V7.5A2.5,2.5 0 0,1 8.5,5H10V3.5A2.5,2.5 0 0,1 12.5,1H16.5A2.5,2.5 0 0,1 19,3.5V5H20.5A2.5,2.5 0 0,1 23,7.5V8A2.5,2.5 0 0,1 20.5,8M8.5,7A0.5,0.5 0 0,0 8,7.5V10.5A0.5,0.5 0 0,0 8.5,11H10V7H8.5M12.5,3A0.5,0.5 0 0,0 12,3.5V16.5A0.5,0.5 0 0,0 12.5,17H20.5A0.5,0.5 0 0,0 21,16.5V10.5A0.5,0.5 0 0,0 20.5,10H19V3.5A0.5,0.5 0 0,0 16.5,3H12.5Z"/>
+                    </svg>
+                    <div class="chat-name">T34ms</div>
+                    <div class="chat-description">M1cr0s0ft</div>
+                </a>
+
+                <!-- Skype -->
+                <a href="https://web.skype.com/" target="_blank" class="chat-link skype">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.069,18.874c-4.023,0-5.82-1.979-5.82-3.464c0-0.765,0.561-1.296,1.333-1.296c1.723,0,1.273,2.477,4.487,2.477c1.641,0,2.55-0.895,2.55-1.811c0-0.551-0.269-1.16-1.354-1.429l-3.576-0.895c-2.88-0.724-3.403-2.286-3.403-3.751c0-3.047,2.861-4.191,5.549-4.191c2.471,0,5.393,1.373,5.393,3.199c0,0.784-0.672,1.24-1.453,1.24c-1.453,0-1.198-2.066-4.119-2.066c-1.405,0-2.267,0.624-2.267,1.667c0,1.004,1.315,1.297,2.108,1.502l2.796,0.716c2.918.75,3.711,2.298,3.711,3.9C17.756,17.347,14.926,18.874,12.069,18.874 M12,2A10,10,0,1,0,22,12A10,10,0,0,0,12,2"/>
+                    </svg>
+                    <div class="chat-name">Skyp3</div>
+                    <div class="chat-description">Video</div>
+                </a>
+
+                <!-- Google Chat -->
+                <a href="https://chat.google.com/" target="_blank" class="chat-link google-chat">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12,2A10,10 0 0,0 2,12C2,13.11 2.2,14.17 2.58,15.15L2,22L8.85,21.42C9.83,21.8 10.89,22 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M7,9H17V11H7V9M7,13H15V15H7V13Z"/>
+                    </svg>
+                    <div class="chat-name">G00gl3 Ch4t</div>
+                    <div class="chat-description">Workspace</div>
+                </a>
+
+                <!-- Discord -->
+                <a href="https://discord.com/app" target="_blank" class="chat-link discord">
+                    <svg class="chat-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419-.0189 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9460 2.4189-2.1568 2.4189Z"/>
+                    </svg>
+                    <div class="chat-name">D1sc0rd</div>
+                    <div class="chat-description">Voice & Text</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3 style="margin-bottom: 1rem; color: #4CAF50; font-size: 1.2rem;">How to use NoFuture:</h3>
+            <ol style="line-height: 1.8; font-size: 1rem;">
+                <li><strong>Start Session</strong> - Both users generate secure key pairs on our server protected with memguard. Each user gets a unique Session ID visible in the placeholder that will be used for pairing</li>
+                <li><strong>Pair Sessions</strong> - Exchange Session IDs with your contact (even through insecure mainstream channels). Once exchanged, the Session IDs automatically pair together enabling secure communication</li>
+                <li><strong>Encrypt & Send</strong> - After successful pairing, you can encrypt/decrypt messages between the two users. Type your message, encrypt it, then send the encrypted text through any mainstream chat platform</li>
+                <li><strong>End Session</strong> - Terminates the secure session by permanently destroying all cryptographic keys, wiping Session IDs, and clearing all encrypted/decrypted content from memory. This makes any future decryption impossible, ensuring your conversation remains truly ephemeral</li>
+            </ol>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <div style="position: relative; display: inline-block;">
+                <a href="leggimi.html" class="nav-btn">📖 Readme</a>
+                <div id="readmeTooltip" class="nav-tooltip">
+                    <strong>📚 Documentation</strong><br>
+                    The readme file is available in both Italian and English languages for better accessibility.
+                </div>
+            </div>
+            
+            <div style="position: relative; display: inline-block;">
+                <a href="challenge.html" class="nav-btn challenge-btn">🛡️ Security Challenge</a>
+                <div id="challengeTooltip" class="nav-tooltip">
+                    <strong>🔥 Live Security Demo</strong><br>
+                    Try to break our memguard protection! Challenge root access, memory dumps, debuggers and more.
+                </div>
+            </div>
+        </div>
+
         <div id="sessionIdContainer">
             <span>Your Session ID: </span>
             <span id="sessionIdValue"></span>
@@ -379,7 +671,7 @@
         </div>
 
         <div class="row">
-            <label for="buddySessionIdInput">Buddy's Session ID:</label>
+            <label for="buddySessionIdInput">Session ID:</label>
             <input type="text" id="buddySessionIdInput" placeholder="Enter your buddy's session ID...">
         </div>
 
@@ -401,7 +693,8 @@
         <div style="text-align: center; position: relative;">
             <button id="showKeyboardButton">Virtual Keyboard</button>
             <div id="keyboardTooltip">
-                <p>Our Virtual Keyboard helps avoid hardware keyloggers. Right-click for secondary characters.</p>
+                <strong>🛡️ Virtual Keyboard Protection</strong><br>
+                This virtual keyboard helps protect against keyloggers and malware. Each time you open it, the keys are randomly arranged to prevent pattern recognition by spyware. Use it to safely type sensitive messages without worrying about keyboard monitoring software.
             </div>
         </div>
 
@@ -418,6 +711,21 @@
         let currentSessionId = null;
         let isNightMode = true;
 
+        // Check clipboard API support
+        const clipboardSupported = !!(navigator.clipboard && navigator.clipboard.writeText && navigator.clipboard.readText);
+        const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
+        
+        console.log('Clipboard API supported:', clipboardSupported);
+        console.log('Secure context:', isSecureContext);
+        
+        if (!clipboardSupported) {
+            console.warn('Clipboard API not supported - using fallback methods');
+        }
+        
+        if (!isSecureContext) {
+            console.warn('Non-secure context - clipboard access may be limited');
+        }
+
         // Use relative URLs for API endpoints
         const API_START = "/api/start_session";
         const API_END = "/api/end_session";
@@ -425,7 +733,7 @@
         const API_BUDDY_ENCRYPT = "/api/buddy_encrypt";
         const API_BUDDY_DECRYPT = "/api/buddy_decrypt";
 
-        // DOM Elements
+        // DOM Elements - with null checks
         const sessionIdContainer = document.getElementById('sessionIdContainer');
         const sessionIdValue = document.getElementById('sessionIdValue');
         const copySessionIdBtn = document.getElementById('copySessionIdBtn');
@@ -442,9 +750,17 @@
         const statusText = document.getElementById('statusText');
         const copyPasteBtn = document.getElementById('copyPasteBtn');
 
+        // Check if all required elements exist
+        if (!sessionIdContainer || !sessionIdValue || !copySessionIdBtn || !startSessionBtn || 
+            !endSessionBtn || !buddySessionIdInput || !pairSessionsBtn || !textInput || 
+            !buddyEncryptBtn || !buddyDecryptBtn || !statusMessage || !themeToggle || 
+            !statusIndicator || !statusText || !copyPasteBtn) {
+            console.error('Some DOM elements are missing!');
+            showStatus('Interface loading error - please refresh page', true);
+        }
+
         let hasClipboardContent = false;
         let clipboardContent = '';
-
 
         function showStatus(message, isError = false) {
             statusMessage.textContent = message;
@@ -526,11 +842,35 @@
             }
         });
 
-        copySessionIdBtn.addEventListener('click', () => {
-            if (!currentSessionId) return;
-            navigator.clipboard.writeText(currentSessionId)
-                .then(() => showStatus('Session ID copied to clipboard'))
-                .catch(error => showStatus('Failed to copy session ID', true));
+        copySessionIdBtn.addEventListener('click', async () => {
+            if (!currentSessionId) {
+                showStatus('No session ID to copy', true);
+                return;
+            }
+            
+            try {
+                // Try modern clipboard API first
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(currentSessionId);
+                    showStatus('Session ID copied to clipboard');
+                } else {
+                    // Fallback for older browsers
+                    fallbackCopyToClipboard(currentSessionId);
+                    showStatus('Session ID copied to clipboard');
+                }
+            } catch (error) {
+                console.error('Copy failed:', error);
+                // Try fallback method
+                try {
+                    fallbackCopyToClipboard(currentSessionId);
+                    showStatus('Session ID copied to clipboard');
+                } catch (fallbackError) {
+                    console.error('Fallback copy failed:', fallbackError);
+                    showStatus('Failed to copy session ID - please copy manually', true);
+                    // Show session ID for manual copy
+                    prompt('Copy this Session ID manually:', currentSessionId);
+                }
+            }
         });
 
         pairSessionsBtn.addEventListener('click', async () => {
@@ -734,6 +1074,46 @@
             createKeyboard(); // Create new random layout each time
         });
 
+        // Keyboard tooltip functionality
+        const showKeyboardButton = document.getElementById('showKeyboardButton');
+        const keyboardTooltip = document.getElementById('keyboardTooltip');
+
+        showKeyboardButton.addEventListener('mouseenter', () => {
+            keyboardTooltip.style.display = 'block';
+        });
+
+        showKeyboardButton.addEventListener('mouseleave', () => {
+            keyboardTooltip.style.display = 'none';
+        });
+
+        // Readme tooltip functionality
+        const readmeBtn = document.querySelector('a[href="leggimi.html"]');
+        const readmeTooltip = document.getElementById('readmeTooltip');
+
+        if (readmeBtn && readmeTooltip) {
+            readmeBtn.addEventListener('mouseenter', () => {
+                readmeTooltip.style.display = 'block';
+            });
+
+            readmeBtn.addEventListener('mouseleave', () => {
+                readmeTooltip.style.display = 'none';
+            });
+        }
+
+        // Challenge tooltip functionality
+        const challengeBtn = document.querySelector('a[href="challenge.html"]');
+        const challengeTooltip = document.getElementById('challengeTooltip');
+
+        if (challengeBtn && challengeTooltip) {
+            challengeBtn.addEventListener('mouseenter', () => {
+                challengeTooltip.style.display = 'block';
+            });
+
+            challengeBtn.addEventListener('mouseleave', () => {
+                challengeTooltip.style.display = 'none';
+            });
+        }
+
         document.getElementById('closeKeyboardButton').addEventListener('click', () => {
             document.getElementById('keyboardContainer').style.display = 'none';
         });
@@ -797,32 +1177,118 @@
                     return;
                 }
                 try {
-                    await navigator.clipboard.writeText(text);
+                    // Try modern clipboard API first
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                    } else {
+                        // Fallback for older browsers
+                        fallbackCopyToClipboard(text);
+                    }
+                    
                     clipboardContent = text;
                     hasClipboardContent = true;
                     copyPasteBtn.textContent = 'Paste/Copy';
                     copyPasteBtn.classList.add('paste-mode');
                     showStatus('Message copied to clipboard');
                 } catch (error) {
-                    showStatus('Failed to copy message', true);
+                    console.error('Copy failed:', error);
+                    try {
+                        fallbackCopyToClipboard(text);
+                        clipboardContent = text;
+                        hasClipboardContent = true;
+                        copyPasteBtn.textContent = 'Paste/Copy';
+                        copyPasteBtn.classList.add('paste-mode');
+                        showStatus('Message copied to clipboard');
+                    } catch (fallbackError) {
+                        console.error('Fallback copy failed:', fallbackError);
+                        showStatus('Failed to copy message - please copy manually', true);
+                        // Show text for manual copy
+                        prompt('Copy this message manually:', text);
+                    }
                 }
             } else {
                 // Modalità Paste
                 try {
-                    const text = await navigator.clipboard.readText();
-                    textInput.value = text;
-                    showStatus('Message pasted from clipboard');
+                    let text = '';
+                    
+                    // Try modern clipboard API first
+                    if (navigator.clipboard && navigator.clipboard.readText) {
+                        text = await navigator.clipboard.readText();
+                    } else {
+                        // Fallback - prompt user to paste
+                        text = prompt('Please paste your message here:') || '';
+                    }
+                    
+                    if (text) {
+                        textInput.value = text;
+                        showStatus('Message pasted from clipboard');
+                    } else {
+                        showStatus('No text to paste', true);
+                    }
+                    
                     hasClipboardContent = false;
                     copyPasteBtn.textContent = 'Copy/Paste';
                     copyPasteBtn.classList.remove('paste-mode');
                 } catch (error) {
-                    showStatus('Failed to paste message', true);
+                    console.error('Paste failed:', error);
+                    // Fallback - prompt user
+                    const text = prompt('Clipboard access failed. Please paste your message here:') || '';
+                    if (text) {
+                        textInput.value = text;
+                        showStatus('Message pasted manually');
+                    } else {
+                        showStatus('Failed to paste message', true);
+                    }
                     hasClipboardContent = false;
                     copyPasteBtn.textContent = 'Copy/Paste';
                     copyPasteBtn.classList.remove('paste-mode');
                 }
             }
         });
+
+        // Fallback copy function for older browsers
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (!successful) {
+                    throw new Error('Copy command failed');
+                }
+            } finally {
+                document.body.removeChild(textArea);
+            }
+        }
     </script>
+
+<footer style="margin-top: 3rem; border-top: 1px solid #eee; padding: 2rem 0; text-align: center; color: #666;">
+    <p style="margin: 0.5rem 0;">
+        <a href="https://github.com/gabrix73/Nofuture-Go-Memguard.git" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           style="color: #ffffff; text-decoration: none;">
+            <i class="fab fa-github" style="margin-right: 8px;"></i>
+            Nofuture-Go-Memguard
+        </a>
+    </p>
+    <p style="margin: 0.5rem 0;">
+        <a href="https://yamn.virebent.art" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           style="color: #ff0000; text-decoration: none;">
+            Victor Hostile Communication Center
+        </a>
+    </p>
+</footer>
+
+<!-- Add JSDelivr Font Awesome alternative -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
 </body>
 </html>
